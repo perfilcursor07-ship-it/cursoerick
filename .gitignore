@@ -1,0 +1,10 @@
+node_modules
+.next
+out
+.env
+.env.local
+.env.bak
+storage/videos/*
+!storage/videos/.gitkeep
+npm-debug.log*
+public/uploads
