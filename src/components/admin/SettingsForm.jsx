@@ -12,7 +12,7 @@ const GROUPS = [
       {
         key: 'site.name',
         label: 'Nome da plataforma',
-        hint: 'Aparece no topo do site e na logo, em uma linha e com fonte de pincel. Em nomes com duas partes, a última fica laranja.',
+        hint: 'Aparece no topo do site. A palavra Legacy vira uma assinatura menor; o restante fica lado a lado na fonte de pincel.',
       },
       {
         key: 'home.badge',

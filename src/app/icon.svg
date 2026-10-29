@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 40 40" fill="none">
   <defs>
     <linearGradient id="t" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#fde68a"/>
-      <stop offset="0.55" stop-color="#f59e0b"/>
-      <stop offset="1" stop-color="#b45309"/>
+      <stop offset="0" stop-color="#a7f3d0"/>
+      <stop offset="0.55" stop-color="#10b981"/>
+      <stop offset="1" stop-color="#047857"/>
     </linearGradient>
   </defs>
   <rect width="40" height="40" rx="12" fill="url(#t)"/>
-  <ellipse cx="20" cy="20" rx="14.5" ry="7" transform="rotate(-28 20 20)" stroke="#431407" stroke-opacity="0.45" stroke-width="2" fill="none"/>
-  <path d="M16.4 13.6a1.6 1.6 0 0 1 2.42-1.37l8.1 5.4a1.6 1.6 0 0 1 0 2.74l-8.1 5.4a1.6 1.6 0 0 1-2.42-1.37V13.6Z" fill="#431407"/>
+  <ellipse cx="20" cy="20" rx="14.5" ry="7" transform="rotate(-28 20 20)" stroke="#022c22" stroke-opacity="0.45" stroke-width="2" fill="none"/>
+  <path d="M16.4 13.6a1.6 1.6 0 0 1 2.42-1.37l8.1 5.4a1.6 1.6 0 0 1 0 2.74l-8.1 5.4a1.6 1.6 0 0 1-2.42-1.37V13.6Z" fill="#022c22"/>
   <path d="M15.6 13.1a1.6 1.6 0 0 1 2.42-1.37l8.1 5.4a1.6 1.6 0 0 1 0 2.74l-8.1 5.4a1.6 1.6 0 0 1-2.42-1.37V13.1Z" fill="#ffffff"/>
 </svg>

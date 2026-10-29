@@ -7,9 +7,9 @@ import { api } from '@/lib/client';
 
 const GRADIENTS = [
   'from-brand-600 via-brand-900 to-black',
-  'from-orange-600 via-ink-900 to-black',
+  'from-emerald-600 via-ink-900 to-black',
   'from-teal-600 via-ink-900 to-black',
-  'from-amber-600 via-ink-900 to-black',
+  'from-green-700 via-ink-900 to-black',
   'from-lime-700 via-ink-900 to-black',
   'from-cyan-700 via-ink-900 to-black',
 ];

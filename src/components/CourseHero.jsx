@@ -1,108 +1,159 @@
 import Link from 'next/link';
-import { Play, Sparkles } from 'lucide-react';
+import { ChevronDown, Play, Sparkles } from 'lucide-react';
+import { PosterArt } from './PosterCard';
 
-/** Destaque compacto do curso e progresso do aluno. */
-export default function CourseHero({ course, stats, firstName }) {
+/** Posicao de cada cartaz no leque do lado direito (frente -> fundo). */
+const FAN = [
+  'left-0 top-6 z-30 -rotate-6',
+  'left-[104px] top-2 z-20 rotate-[3deg] scale-[.9]',
+  'left-[180px] top-8 z-10 rotate-[11deg] scale-[.8]',
+];
+
+/** Banner de destaque do curso, no estilo "billboard" das plataformas de streaming. */
+export default function CourseHero({ course, stats, firstName, featured = [], moduleCount, courses = [] }) {
   const next = stats.nextLesson;
   const titleWords = String(course.title || '').trim().split(/\s+/);
   const titleAccent = titleWords.length > 1 ? titleWords.pop() : '';
   const titleLead = titleAccent ? titleWords.join(' ') : titleWords[0];
+  const started = stats.totalCompleted > 0;
 
   return (
-    <section className="relative isolate overflow-hidden border-b border-white/5">
+    <section className="relative isolate overflow-hidden">
+      {/* fundo */}
       <div className="absolute inset-0 -z-10">
         {course.cover_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={course.cover_url}
-            alt=""
-            className="h-full w-full object-cover object-center"
-          />
+          <img src={course.cover_url} alt="" className="h-full w-full object-cover object-center" />
         ) : (
-          <div className="h-full w-full bg-gradient-to-br from-brand-900/70 via-ink-950 to-black">
-            <div className="absolute inset-0 bg-grid-dark bg-[size:52px_52px] opacity-40" />
-            <div className="absolute -top-24 left-1/4 h-80 w-80 rounded-full bg-brand-400/15 blur-[110px]" />
+          <div className="h-full w-full bg-[radial-gradient(ellipse_at_75%_30%,rgba(16,185,129,.38),transparent_55%),radial-gradient(ellipse_at_100%_100%,rgba(250,204,21,.12),transparent_45%)]">
+            <div className="absolute inset-0 bg-grid-dark bg-[size:48px_48px] opacity-50 [mask-image:radial-gradient(ellipse_at_70%_40%,black,transparent_70%)]" />
+            <span className="absolute -right-6 bottom-6 select-none font-brush text-[clamp(8rem,22vw,20rem)] uppercase leading-none text-white/[0.035]">
+              {titleAccent || titleLead}
+            </span>
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-ink-950/85 to-brand-900/35" />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-transparent to-black/45" />
-        <div className="absolute -right-20 top-4 h-80 w-80 rounded-full bg-brand-400/10 blur-[110px]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink-950 via-ink-950/75 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-ink-950 via-ink-950/80 to-transparent" />
       </div>
 
-      <div className="container-page grid min-h-[330px] items-center gap-8 py-10 md:min-h-[350px] md:grid-cols-[minmax(0,1fr)_280px] md:py-12">
-        <div className="max-w-3xl">
-          <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-brand-300">
-            <Sparkles size={14} />
-            Olá, {firstName}. Sua jornada continua.
-          </p>
-
-          <h1 className="mt-4 max-w-2xl font-brush text-[clamp(2rem,4vw,2.75rem)] font-normal uppercase leading-[0.98] tracking-normal text-white drop-shadow-[0_4px_24px_rgba(0,0,0,.75)]">
-            {titleLead}{' '}
-            {titleAccent && <span className="text-brand-300">{titleAccent}</span>}
-          </h1>
-
-          {course.subtitle && (
-            <p className="mt-4 max-w-xl border-l-2 border-brand-400/60 pl-3 text-sm leading-relaxed text-zinc-300">
-              {course.subtitle}
-            </p>
+      <div className="container-page grid min-h-[380px] grid-cols-1 items-center gap-10 pb-28 pt-10 md:min-h-[430px] lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="max-w-2xl animate-fade-up">
+          {courses.length > 1 && (
+            <nav className="mb-6 flex flex-wrap gap-2" aria-label="Seus cursos">
+              {courses.map((c) => (
+                <Link
+                  key={c.id}
+                  href={`/painel?curso=${c.slug}`}
+                  className={[
+                    'rounded-full px-3.5 py-1.5 text-xs font-semibold transition',
+                    c.slug === course.slug
+                      ? 'bg-white text-black'
+                      : 'bg-white/10 text-zinc-300 backdrop-blur hover:bg-white/20 hover:text-white',
+                  ].join(' ')}
+                >
+                  {c.title}
+                </Link>
+              ))}
+            </nav>
           )}
 
-          {next ? (
-            <div className="mt-6 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
+          <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+            <span className="rounded bg-brand-400 px-1.5 py-0.5 text-[9px] tracking-[0.18em] text-black">Curso</span>
+            Olá, {firstName}
+          </p>
+
+          <h1 className="mt-3 font-brush text-[clamp(1.9rem,4.2vw,3.1rem)] font-normal uppercase leading-[0.95] text-white drop-shadow-[0_6px_30px_rgba(0,0,0,.8)]">
+            {titleLead} {titleAccent && <span className="text-brand-300">{titleAccent}</span>}
+          </h1>
+
+          <div className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs font-semibold text-zinc-300">
+            <span className="text-brand-300">{started ? `${stats.percent}% concluído` : 'Novo pra você'}</span>
+            <span className="text-zinc-600">•</span>
+            <span>{stats.totalLessons} aulas</span>
+            {moduleCount > 0 && (
+              <>
+                <span className="text-zinc-600">•</span>
+                <span>
+                  {moduleCount} {moduleCount === 1 ? 'módulo' : 'módulos'}
+                </span>
+              </>
+            )}
+            <span className="rounded border border-white/25 px-1.5 py-px text-[10px] text-zinc-200">
+              {stats.totalUnlocked} {stats.totalUnlocked === 1 ? 'liberada' : 'liberadas'}
+            </span>
+          </div>
+
+          {course.subtitle && (
+            <p className="mt-3 max-w-lg text-sm leading-relaxed text-zinc-300">{course.subtitle}</p>
+          )}
+
+          <div className="mt-6 flex flex-wrap items-center gap-2.5">
+            {next ? (
               <Link
                 href={`/painel/aula/${next.slug}`}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-brand-200/50 bg-gradient-to-b from-brand-300 to-brand-500 px-5 py-3 text-sm font-bold text-black shadow-[0_12px_32px_-14px_rgba(245,158,11,.9)] transition hover:from-brand-200 hover:to-brand-400 active:scale-[.98]"
+                className="inline-flex items-center gap-2.5 rounded-md bg-white px-5 py-2.5 text-sm font-bold text-black shadow-[0_10px_40px_-10px_rgba(255,255,255,.45)] transition hover:bg-white/85 active:scale-[.98]"
               >
-                <Play size={15} className="fill-current" />
-                {stats.totalCompleted > 0 ? 'Continuar assistindo' : 'Começar agora'}
+                <Play size={17} className="fill-current" />
+                {started ? 'Continuar' : 'Assistir'}
               </Link>
-              <p className="max-w-xs truncate text-xs text-zinc-400">
-                Próxima aula: <span className="text-zinc-200">{next.title}</span>
-              </p>
+            ) : (
+              <span className="badge-brand">
+                <Sparkles size={13} />
+                Novas aulas em breve
+              </span>
+            )}
+            <a
+              href="#aulas"
+              className="inline-flex items-center gap-2 rounded-md bg-zinc-500/40 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur transition hover:bg-zinc-500/60"
+            >
+              <ChevronDown size={17} />
+              Ver aulas
+            </a>
+          </div>
+
+          {next && (
+            <div className="mt-6 max-w-sm">
+              <div className="flex items-center justify-between gap-3 text-xs text-zinc-400">
+                <span className="truncate">
+                  {started ? 'Próxima' : 'Comece por'}: <span className="text-zinc-200">{next.title}</span>
+                </span>
+                <span className="shrink-0 font-semibold text-zinc-300">
+                  {stats.totalCompleted}/{stats.totalLessons}
+                </span>
+              </div>
+              <div
+                className="mt-2 h-1 overflow-hidden rounded-full bg-white/15"
+                role="progressbar"
+                aria-label="Progresso do curso"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={stats.percent}
+              >
+                <div className="h-full rounded-full bg-brand-400" style={{ width: `${stats.percent}%` }} />
+              </div>
             </div>
-          ) : (
-            <span className="badge-brand mt-6">
-              <Sparkles size={13} />
-              Novas aulas em breve
-            </span>
           )}
         </div>
 
-        <aside className="rounded-2xl border border-brand-200/15 bg-black/65 p-5 shadow-[0_24px_80px_-32px_rgba(245,158,11,.3)] backdrop-blur-xl">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-300">
-              Seu progresso
-            </p>
-            <span className="rounded-full border border-brand-300/25 bg-brand-300/10 px-2.5 py-1 text-xs font-bold text-brand-200">
-              {stats.percent}%
-            </span>
+        {/* leque com as proximas aulas */}
+        {featured.length > 0 && (
+          <div className="relative hidden h-[270px] lg:block" aria-hidden="true">
+            {featured.map(({ lesson, index, tone }, i) => (
+              <div
+                key={lesson.id}
+                className={`group absolute aspect-[2/3] w-[150px] overflow-hidden rounded-xl shadow-[0_30px_60px_-20px_rgba(0,0,0,.9)] ring-1 ring-white/15 transition duration-500 hover:-translate-y-2 ${FAN[i]}`}
+              >
+                <PosterArt lesson={lesson} index={index} tone={tone} compact />
+                {i > 0 && <div className={`absolute inset-0 ${i === 1 ? 'bg-black/45' : 'bg-black/65'}`} />}
+                {i === 0 && (
+                  <span className="absolute bottom-3 left-3 rounded bg-brand-400 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-black">
+                    {started ? 'Próxima aula' : 'Comece aqui'}
+                  </span>
+                )}
+              </div>
+            ))}
           </div>
-
-          <p className="mt-5 text-3xl font-bold tracking-tight text-white">
-            {stats.totalCompleted}
-            <span className="ml-2 text-sm font-medium text-zinc-500">
-              de {stats.totalLessons} aulas
-            </span>
-          </p>
-
-          <div
-            className="mt-4 h-2 overflow-hidden rounded-full bg-white/10"
-            role="progressbar"
-            aria-label="Progresso do curso"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={stats.percent}
-          >
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-brand-600 via-brand-400 to-brand-200 transition-all"
-              style={{ width: `${stats.percent}%` }}
-            />
-          </div>
-
-          <p className="mt-3 text-xs text-zinc-500">
-            {stats.totalCompleted === 1 ? 'Aula concluída' : 'Aulas concluídas'}
-          </p>
-        </aside>
+        )}
       </div>
     </section>
   );

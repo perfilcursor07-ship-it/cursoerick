@@ -16,7 +16,7 @@ export default function SiteFooter({ siteName }) {
           <Link href="/login" className="link-muted">
             Entrar
           </Link>
-          <Link href="/cadastro" className="link-muted">
+          <Link href="/cadastro" className="link-muted hidden md:inline">
             Criar conta
           </Link>
           <span className="text-zinc-600">

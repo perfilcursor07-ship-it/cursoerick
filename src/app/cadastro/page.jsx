@@ -13,6 +13,7 @@ export default async function RegisterPage() {
       siteName={settings['site.name']}
       title="Criar sua conta"
       subtitle="Leva menos de um minuto e a primeira aula abre na hora."
+      showAside={false}
     >
       <RegisterForm />
     </AuthShell>

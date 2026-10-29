@@ -7,7 +7,7 @@
   --bg: #07070a;
   --surface: #101017;
   --border: #22222e;
-  --brand: #f59e0b;
+  --brand: #10b981;
 }
 
 * {
@@ -26,6 +26,7 @@ html {
   scroll-padding-top: 5rem;
 }
 
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -37,7 +38,7 @@ body {
 }
 
 ::selection {
-  background: rgba(245, 158, 11, 0.35);
+  background: rgba(16, 185, 129, 0.35);
 }
 
 /* ---------- barra de rolagem ---------- */
@@ -66,7 +67,7 @@ body {
     @apply inline-flex select-none items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition
            disabled:cursor-not-allowed disabled:opacity-50;
   }
-  /* no laranja o texto escuro contrasta muito melhor que o branco */
+  /* no verde o texto escuro contrasta muito melhor que o branco */
   .btn-primary {
     @apply btn bg-brand-500 font-bold text-ink-950 shadow-glow hover:bg-brand-400 active:scale-[.98];
   }
@@ -88,6 +89,18 @@ body {
     @apply w-full rounded-xl border border-ink-600 bg-ink-900/80 px-4 py-3 text-sm text-zinc-100
            placeholder:text-zinc-500 outline-none transition
            focus:border-brand-500/70 focus:ring-4 focus:ring-brand-500/15;
+  }
+  .auth-input {
+    @apply h-12 rounded-xl border-white/10 bg-ink-950/65 text-[13px] shadow-inner shadow-black/20 transition;
+  }
+  .auth-input:hover {
+    @apply border-white/20;
+  }
+  .auth-input:focus {
+    @apply border-brand-400/70 bg-ink-950 ring-4 ring-brand-400/10;
+  }
+  .auth-input::placeholder {
+    @apply text-zinc-600;
   }
   .label {
     @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-zinc-400;
@@ -136,7 +149,64 @@ body {
   position: absolute;
   inset: -20% -10% auto -10%;
   height: 520px;
-  background: radial-gradient(60% 60% at 50% 0%, rgba(245, 158, 11, 0.26), transparent 70%);
+  background: radial-gradient(60% 60% at 50% 0%, rgba(16, 185, 129, 0.26), transparent 70%);
   filter: blur(10px);
   pointer-events: none;
+}
+
+/* O gesto, a rolagem e o pagamento contam uma única sequência. */
+.hero-feed-track {
+  animation: hero-feed-scroll 7s ease-in-out infinite;
+}
+
+.hero-swipe-hand {
+  opacity: 0;
+  animation: hero-swipe-hand 7s ease-in-out infinite;
+}
+
+.hero-earnings {
+  opacity: 0.72;
+  animation: hero-earnings 7s ease-in-out infinite;
+}
+
+.hero-earnings-progress {
+  width: 0;
+  animation: hero-earnings-progress 7s ease-in-out infinite;
+}
+
+@keyframes hero-feed-scroll {
+  0%, 14% { transform: translateY(0); }
+  38%, 79% { transform: translateY(-50%); }
+  96%, 100% { transform: translateY(0); }
+}
+
+@keyframes hero-swipe-hand {
+  0%, 11% { opacity: 0; transform: translate(10px, 16px) rotate(-12deg); }
+  18% { opacity: 1; transform: translate(6px, 12px) rotate(-12deg); }
+  37% { opacity: 1; transform: translate(-10px, -58px) rotate(-12deg); }
+  44%, 100% { opacity: 0; transform: translate(-14px, -66px) rotate(-12deg); }
+}
+
+@keyframes hero-earnings {
+  0%, 39% { opacity: 0.72; transform: translateY(-50%) scale(.96); }
+  52%, 81% { opacity: 1; transform: translateY(-50%) scale(1); }
+  97%, 100% { opacity: 0.72; transform: translateY(-50%) scale(.96); }
+}
+
+@keyframes hero-earnings-progress {
+  0%, 45% { width: 0; }
+  70%, 86% { width: 100%; }
+  100% { width: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-feed-track,
+  .hero-swipe-hand,
+  .hero-earnings,
+  .hero-earnings-progress {
+    animation: none;
+  }
+
+  .hero-earnings { opacity: 1; transform: translateY(-50%); }
+  .hero-earnings-progress { width: 100%; }
 }

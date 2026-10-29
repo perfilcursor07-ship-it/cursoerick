@@ -1,7 +1,7 @@
 import { db } from './db';
 
 const DEFAULTS = {
-  'site.name': process.env.NEXT_PUBLIC_SITE_NAME || 'NomadeFace',
+  'site.name': process.env.NEXT_PUBLIC_SITE_NAME || 'NomadeFace Legacy',
   'home.badge': 'Turma aberta - comece hoje mesmo',
   'home.title': 'Ganhe em dolar com paginas do Facebook',
   'home.subtitle':

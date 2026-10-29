@@ -23,6 +23,7 @@ const MODULES = [
     lessons: [
       {
         title: 'Boas-vindas: como funciona ganhar em dolar',
+        thumbnail_url: '/images/aula-01-boas-vindas.webp',
         description:
           'A visao geral do metodo: o que e uma pagina monetizada, de onde vem o dinheiro e o que voce vai construir nas proximas aulas.',
         release_mode: 'free',
@@ -145,6 +146,7 @@ exports.seed = async function seed(knex) {
         title: lesson.title,
         slug: slugify(lesson.title, n),
         description: lesson.description,
+        thumbnail_url: lesson.thumbnail_url || null,
         video_type: 'external',
         video_url: '',
         release_mode: lesson.release_mode || 'manual',

@@ -2,83 +2,129 @@ import Link from 'next/link';
 import { CalendarClock, Check, Lock, Play } from 'lucide-react';
 import { formatDateTime, formatDuration } from '@/lib/utils';
 
-/** Paletas usadas quando a aula ainda nao tem arte de capa. */
-const GRADIENTS = [
-  'from-brand-600 via-brand-900 to-black',
-  'from-orange-600 via-ink-900 to-black',
-  'from-teal-600 via-ink-900 to-black',
-  'from-amber-600 via-ink-900 to-black',
-  'from-lime-700 via-ink-900 to-black',
-  'from-cyan-700 via-ink-900 to-black',
+/**
+ * Paletas usadas quando a aula ainda nao tem arte de capa: uma por modulo,
+ * para cada prateleira ter a sua cor (verde -> teal -> lima -> esmeralda).
+ */
+const PALETTES = [
+  { bg: 'from-emerald-500 via-emerald-950 to-black', glow: 'bg-emerald-300', tag: 'text-emerald-200' },
+  { bg: 'from-teal-400 via-cyan-950 to-black', glow: 'bg-cyan-300', tag: 'text-cyan-200' },
+  { bg: 'from-lime-400 via-green-950 to-black', glow: 'bg-yellow-300', tag: 'text-lime-200' },
+  { bg: 'from-green-500 via-teal-950 to-black', glow: 'bg-green-300', tag: 'text-green-200' },
 ];
+
+/** Arte do cartaz: a capa enviada pelo admin ou um cartaz gerado com o titulo. */
+export function PosterArt({ lesson, index, tone = 0, compact = false }) {
+  if (lesson.thumbnail_url) {
+    const isWelcomeLesson = lesson.slug === 'aula-01-boas-vindas-como-funciona-ganhar-em-dolar';
+    return (
+      <>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={lesson.thumbnail_url}
+          alt={lesson.title}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
+        />
+        {isWelcomeLesson && (
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/20">
+            <span className="absolute left-3 top-3 rounded bg-brand-400 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-black shadow-lg">
+              Aula 01
+            </span>
+            <div className="absolute inset-x-3 bottom-10">
+              <p className="font-brush text-[19px] uppercase leading-none text-white drop-shadow-lg">Boas-vindas</p>
+              <p className="mt-1 text-[9px] font-semibold leading-tight text-emerald-100 drop-shadow-lg">
+                Como funciona ganhar em dólar
+              </p>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  }
+
+  const p = PALETTES[tone % PALETTES.length];
+  const number = String(index).padStart(2, '0');
+
+  return (
+    <div className={`absolute inset-0 overflow-hidden bg-gradient-to-br ${p.bg}`}>
+      <div className={`absolute -right-10 -top-10 h-32 w-32 rounded-full ${p.glow} opacity-40 blur-3xl`} />
+      <div className="absolute inset-0 bg-grid-dark bg-[size:22px_22px] opacity-30" />
+
+      {/* numero gigante ao fundo */}
+      <span className="absolute -right-2 top-6 font-brush text-[clamp(7rem,30vw,10rem)] leading-none text-white/[0.09] transition duration-500 group-hover:text-white/[0.14]">
+        {number}
+      </span>
+
+      <span
+        className={`absolute left-3 top-3 rounded bg-black/35 px-1.5 py-0.5 text-[9px] sm:left-4 sm:top-4 sm:text-[10px] font-black uppercase tracking-[0.2em] backdrop-blur-sm ${p.tag}`}
+      >
+        Aula {number}
+      </span>
+
+      <p
+        className={[
+          'absolute line-clamp-4 font-brush uppercase leading-[1.05] text-white drop-shadow-[0_2px_10px_rgba(0,0,0,.7)]',
+          compact
+            ? 'inset-x-3 bottom-10 text-[17px]'
+            : 'inset-x-3 bottom-10 text-[19px] sm:inset-x-4 sm:bottom-12 sm:text-[23px] lg:text-[25px]',
+        ].join(' ')}
+      >
+        {lesson.title}
+      </p>
+    </div>
+  );
+}
+
+function statusLabel(lesson) {
+  const { state } = lesson;
+  if (!state.unlocked) {
+    if (state.lock?.code === 'scheduled' && lesson.release_at) return formatDateTime(lesson.release_at);
+    if (state.lock?.code === 'sequence') return 'Conclua a anterior';
+    return 'Em breve';
+  }
+  if (state.completed) return 'Concluída';
+  return lesson.duration_seconds > 0 ? formatDuration(lesson.duration_seconds) : 'Assistir';
+}
 
 /**
  * Cartaz vertical de uma aula (estilo Netflix).
  * Cresce no hover e mostra cadeado quando a aula ainda nao foi liberada.
  */
-export default function PosterCard({ lesson, index }) {
+export default function PosterCard({ lesson, index, tone = 0 }) {
   const { state } = lesson;
   const locked = !state.unlocked;
   const hasArt = Boolean(lesson.thumbnail_url);
-  const gradient = GRADIENTS[(lesson.id + index) % GRADIENTS.length];
-
-  const art = lesson.thumbnail_url ? (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={lesson.thumbnail_url}
-      alt={lesson.title}
-      loading="lazy"
-      className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
-    />
-  ) : (
-    <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`}>
-      <div className="absolute inset-0 bg-grid-dark bg-[size:26px_26px] opacity-40" />
-      <span className="absolute left-3 top-3 text-[10px] font-black uppercase tracking-[0.22em] text-white/50">
-        Aula
-      </span>
-      <span className="absolute inset-0 grid place-items-center pb-10 text-[64px] font-black leading-none tracking-tighter text-white/15">
-        {String(index).padStart(2, '0')}
-      </span>
-    </div>
-  );
+  const watched =
+    !locked && state.secondsWatched > 0 && lesson.duration_seconds > 0
+      ? Math.min(100, Math.round((state.secondsWatched / lesson.duration_seconds) * 100))
+      : 0;
 
   const inner = (
     <article
       className={[
-        'group relative aspect-[2/3] w-full overflow-hidden rounded-xl border border-white/5 bg-ink-850',
-        'transition-all duration-300 ease-out',
+        'group relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-ink-850 ring-1 ring-white/10',
+        'transition duration-300 ease-out',
         locked
-          ? 'hover:scale-[1.06] hover:border-white/10'
-          : 'hover:z-20 hover:scale-[1.08] hover:border-brand-400/40 hover:shadow-[0_24px_60px_-18px_rgba(245,158,11,.6)]',
+          ? 'hover:scale-[1.04]'
+          : 'hover:z-20 hover:scale-[1.05] hover:ring-2 hover:ring-brand-300/70 hover:shadow-[0_22px_50px_-16px_rgba(16,185,129,.55)]',
       ].join(' ')}
     >
-      {art}
+      <div className={locked ? 'absolute inset-0 brightness-[.6] saturate-[.45]' : 'absolute inset-0'}>
+        <PosterArt lesson={lesson} index={index} tone={tone} />
+      </div>
 
-      {/* vinheta para o texto respirar (mais leve quando ha arte propria) */}
-      <div
-        className={[
-          'absolute inset-0 bg-gradient-to-t to-transparent',
-          hasArt ? 'from-black/35 via-transparent' : 'from-black/85 via-black/10',
-        ].join(' ')}
-      />
-
-      {/* aulas travadas ficam apagadas */}
-      {locked && (
-        <div className="absolute inset-0 bg-black/55 backdrop-grayscale transition group-hover:bg-black/45" />
-      )}
+      {/* vinheta para o rodape respirar */}
+      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 to-transparent" />
 
       {/* selo de estado no canto superior */}
-      <div className="absolute right-2.5 top-2.5 z-10">
+      <div className="absolute right-2 top-2 z-10 sm:right-3 sm:top-3">
         {locked ? (
-          <span className="grid h-7 w-7 place-items-center rounded-full border border-white/15 bg-black/70 text-white/80 backdrop-blur">
-            {state.lock?.code === 'scheduled' ? (
-              <CalendarClock size={13} />
-            ) : (
-              <Lock size={13} />
-            )}
+          <span className="grid h-7 w-7 place-items-center rounded-full bg-black/70 text-white/85 ring-1 ring-white/15 backdrop-blur">
+            {state.lock?.code === 'scheduled' ? <CalendarClock size={13} /> : <Lock size={13} />}
           </span>
         ) : state.completed ? (
-          <span className="grid h-7 w-7 place-items-center rounded-full bg-emerald-500 text-black">
+          <span className="grid h-7 w-7 place-items-center rounded-full bg-brand-400 text-black shadow-lg">
             <Check size={14} strokeWidth={3} />
           </span>
         ) : null}
@@ -87,70 +133,44 @@ export default function PosterCard({ lesson, index }) {
       {/* play que aparece no hover */}
       {!locked && (
         <div className="absolute inset-0 z-10 grid place-items-center opacity-0 transition duration-300 group-hover:opacity-100">
-          <span className="grid h-12 w-12 place-items-center rounded-full border border-white/25 bg-black/55 text-white backdrop-blur">
-            <Play size={18} className="translate-x-[2px] fill-white" />
+          <span className="grid h-12 w-12 scale-90 place-items-center rounded-full bg-white sm:h-14 sm:w-14 text-black shadow-xl transition duration-300 group-hover:scale-100">
+            <Play size={20} className="translate-x-[2px] fill-current" />
           </span>
         </div>
       )}
 
-      {/* rodape do cartaz: quando a aula tem arte propria o texto so aparece
-          no hover, para nao competir com o titulo desenhado na capa */}
-      <div
-        className={[
-          'absolute inset-x-0 bottom-0 z-10 p-3 transition-opacity duration-300',
-          hasArt ? 'opacity-0 group-hover:opacity-100' : 'opacity-100',
-        ].join(' ')}
-      >
+      {/* rodape: com arte propria o titulo so aparece no hover */}
+      <div className="absolute inset-x-0 bottom-0 z-10 p-3 sm:p-4">
         {hasArt && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-24 bg-gradient-to-t from-black via-black/80 to-transparent" />
-        )}
-
-        {!hasArt && (
-          <p
-            className={[
-              'line-clamp-2 text-[12px] font-semibold leading-tight',
-              locked ? 'text-zinc-400' : 'text-white',
-            ].join(' ')}
-          >
+          <p className="mb-1 line-clamp-2 text-[12px] font-semibold leading-tight text-white opacity-0 transition group-hover:opacity-100">
             {lesson.title}
           </p>
         )}
-
-        <p className="mt-1 truncate text-[10px] font-medium uppercase tracking-wide text-white/55">
-          {locked
-            ? state.lock?.code === 'scheduled' && lesson.release_at
-              ? formatDateTime(lesson.release_at)
-              : state.lock?.code === 'sequence'
-                ? 'conclua a anterior'
-                : 'em breve'
-            : lesson.duration_seconds > 0
-              ? formatDuration(lesson.duration_seconds)
-              : 'disponivel'}
-        </p>
-
+        <span
+          className={[
+            'inline-flex max-w-full items-center truncate rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider sm:px-2 sm:text-[10px]',
+            locked ? 'bg-white/10 text-white/60' : 'bg-brand-400/90 text-black',
+          ].join(' ')}
+        >
+          {statusLabel(lesson)}
+        </span>
       </div>
 
       {/* barra de progresso de quem ja comecou (sempre visivel) */}
-      {!locked && state.secondsWatched > 0 && lesson.duration_seconds > 0 && (
-        <div className="absolute inset-x-3 bottom-2 z-20 h-[3px] overflow-hidden rounded-full bg-white/25">
-          <div
-            className="h-full rounded-full bg-brand-400"
-            style={{
-              width: `${Math.min(
-                100,
-                Math.round((state.secondsWatched / lesson.duration_seconds) * 100)
-              )}%`,
-            }}
-          />
+      {watched > 0 && (
+        <div className="absolute inset-x-0 bottom-0 z-20 h-1 bg-white/20">
+          <div className="h-full bg-brand-400" style={{ width: `${watched}%` }} />
         </div>
       )}
     </article>
   );
 
+  const size = 'block w-[42vw] max-w-[200px] shrink-0 sm:w-[190px] sm:max-w-none lg:w-[215px]';
+
   if (locked) {
     return (
       <div
-        className="block w-[138px] shrink-0 cursor-not-allowed select-none sm:w-[160px] lg:w-[178px]"
+        className={`${size} cursor-not-allowed select-none`}
         title={state.lock?.message || 'Aguardando liberacao'}
       >
         {inner}
@@ -161,7 +181,7 @@ export default function PosterCard({ lesson, index }) {
   return (
     <Link
       href={`/painel/aula/${lesson.slug}`}
-      className="block w-[138px] shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-brand-400 sm:w-[160px] lg:w-[178px]"
+      className={`${size} rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-brand-400`}
     >
       {inner}
     </Link>

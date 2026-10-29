@@ -17,8 +17,8 @@ const brush = localFont({
 
 export const metadata = {
   title: {
-    default: `${process.env.NEXT_PUBLIC_SITE_NAME || 'NomadeFace'} - Plataforma de video aulas`,
-    template: `%s | ${process.env.NEXT_PUBLIC_SITE_NAME || 'NomadeFace'}`,
+    default: `${process.env.NEXT_PUBLIC_SITE_NAME || 'NomadeFace Legacy'} - Plataforma de video aulas`,
+    template: `%s | ${process.env.NEXT_PUBLIC_SITE_NAME || 'NomadeFace Legacy'}`,
   },
   description:
     'Plataforma de video aulas com liberacao progressiva de conteudo. Aprenda no seu ritmo, uma aula por vez.',
