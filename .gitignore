@@ -8,3 +8,4 @@ storage/videos/*
 !storage/videos/.gitkeep
 npm-debug.log*
 public/uploads
+public/videos
