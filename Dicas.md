@@ -13,7 +13,8 @@ git pull --ff-only origin main
 CAMINHO
 cd /home/nomadesface/htdocs/nomadesface.online/cursoerick
 git pull origin main
-chmod +x deploy.sh
+git checkout -- deploy.sh && git pull origin main && chmod +x deploy.sh && ./deploy.sh
+
 
 
 SUBIR GIT
