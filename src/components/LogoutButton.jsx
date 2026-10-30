@@ -10,6 +10,7 @@ export default function LogoutButton({ compact = false, className = '' }) {
 
   async function handleLogout() {
     setLoading(true);
+    window.dispatchEvent(new Event('curso:logout'));
     await fetch('/api/auth/logout', { method: 'POST' });
     router.replace('/');
     router.refresh();

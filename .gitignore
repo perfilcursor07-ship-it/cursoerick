@@ -8,4 +8,5 @@ storage/videos/*
 !storage/videos/.gitkeep
 npm-debug.log*
 public/uploads
-public/videos
+public/videos/*
+!public/videos/chamada-capa.jpg

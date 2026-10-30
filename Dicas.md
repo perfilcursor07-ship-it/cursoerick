@@ -12,8 +12,9 @@ git pull --ff-only origin main
 
 CAMINHO
 cd /home/nomadesface/htdocs/nomadesface.online/cursoerick
-git pull origin main
-git checkout -- deploy.sh && git pull origin main && chmod +x deploy.sh && ./deploy.sh
+NODE_ENV=production npm run migrate
+npm run build
+pm2 restart cursoerick --update-env
 
 
 

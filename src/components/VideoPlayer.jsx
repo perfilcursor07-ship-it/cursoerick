@@ -22,25 +22,43 @@ export default function VideoPlayer({
   const videoRef = useRef(null);
   const lastSent = useRef(0);
   const secondsRef = useRef(startAt);
+  const loggingOut = useRef(false);
 
   const [completed, setCompleted] = useState(completedInitial);
   const [saving, setSaving] = useState(false);
 
   const send = useCallback(
     async (payload) => {
+      if (loggingOut.current) return false;
       try {
-        await fetch('/api/progress', {
+        const response = await fetch('/api/progress', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ slug, ...payload }),
           keepalive: true,
         });
+        if (response.status === 401) {
+          if (!loggingOut.current) {
+            loggingOut.current = true;
+            router.replace('/login?next=' + encodeURIComponent(window.location.pathname));
+          }
+          return false;
+        }
+        return response.ok;
       } catch {
-        /* progresso e best-effort: nao atrapalha a aula */
+        return false;
       }
     },
-    [slug]
+    [slug, router]
   );
+
+  useEffect(() => {
+    const handleLogout = () => {
+      loggingOut.current = true;
+    };
+    window.addEventListener('curso:logout', handleLogout);
+    return () => window.removeEventListener('curso:logout', handleLogout);
+  }, []);
 
   // retoma de onde parou
   useEffect(() => {
@@ -74,17 +92,21 @@ export default function VideoPlayer({
   }
 
   async function handleEnded() {
-    setCompleted(true);
-    await send({ seconds: Math.floor(secondsRef.current), completed: true });
-    router.refresh();
+    const saved = await send({ seconds: Math.floor(secondsRef.current), completed: true });
+    if (saved) {
+      setCompleted(true);
+      router.refresh();
+    }
   }
 
   async function toggleComplete() {
     setSaving(true);
-    setCompleted(true);
-    await send({ seconds: Math.floor(secondsRef.current), completed: true });
+    const saved = await send({ seconds: Math.floor(secondsRef.current), completed: true });
+    if (saved) {
+      setCompleted(true);
+      router.refresh();
+    }
     setSaving(false);
-    router.refresh();
   }
 
   return (
