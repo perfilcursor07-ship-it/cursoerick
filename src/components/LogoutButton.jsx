@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { LogOut } from 'lucide-react';
 
-export default function LogoutButton({ compact = false }) {
+export default function LogoutButton({ compact = false, className = '' }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -20,7 +20,7 @@ export default function LogoutButton({ compact = false }) {
       type="button"
       onClick={handleLogout}
       disabled={loading}
-      className="btn-ghost btn-sm"
+      className={`btn-ghost btn-sm ${className}`}
       title="Sair da conta"
     >
       <LogOut size={14} />
@@ -28,3 +28,4 @@ export default function LogoutButton({ compact = false }) {
     </button>
   );
 }
+

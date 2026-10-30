@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ChevronDown, LayoutDashboard, ShieldCheck, UserRound } from 'lucide-react';
+import { LayoutDashboard, ShieldCheck } from 'lucide-react';
 import Logo from './Logo';
 import LogoutButton from './LogoutButton';
 
@@ -43,50 +43,20 @@ export default function AppHeader({ siteName, user, links = [], homeHref = '/pai
             </Link>
           )}
 
-          {homeHref === '/painel' ? (
-            <details className="group relative">
-              <summary
-                aria-label="Opcoes da conta"
-                className="flex cursor-pointer list-none items-center gap-2 rounded-xl py-1 pl-1 pr-2 transition hover:bg-ink-800 [&::-webkit-details-marker]:hidden"
-              >
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-xs font-bold text-ink-950">
-                  {initials}
-                </span>
-                <span className="hidden max-w-[140px] truncate text-sm font-medium text-zinc-300 sm:block">
-                  {user.name.split(/\s+/)[0]}
-                </span>
-                <ChevronDown size={14} className="text-zinc-500 transition group-open:rotate-180" />
-              </summary>
-              <div className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-2xl border border-ink-600 bg-ink-900 p-2 shadow-2xl shadow-black/40">
-                <div className="border-b border-ink-700 px-3 pb-3 pt-2">
-                  <p className="truncate text-sm font-semibold text-white">{user.name}</p>
-                  <p className="mt-1 truncate text-xs text-zinc-500">{user.email}</p>
-                </div>
-                <Link
-                  href="/painel/perfil"
-                  className="mt-2 flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-200 transition hover:bg-ink-800 hover:text-white"
-                >
-                  <UserRound size={16} className="text-brand-300" />
-                  Meu perfil
-                </Link>
-              </div>
-            </details>
-          ) : (
-            <div className="hidden items-center gap-2.5 sm:flex">
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-xs font-bold text-ink-950">
-                {initials}
-              </span>
-              <span className="max-w-[140px] truncate text-sm font-medium text-zinc-300">
-                {user.name.split(/\s+/)[0]}
-              </span>
-            </div>
-          )}
+          <div className="hidden items-center gap-2.5 sm:flex">
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-xs font-bold text-ink-950">
+              {initials}
+            </span>
+            <span className="max-w-[140px] truncate text-sm font-medium text-zinc-300">
+              {user.name.split(/\s+/)[0]}
+            </span>
+          </div>
 
           <LogoutButton compact />
         </div>
       </div>
 
-      {/* navegacao mobile */}
+      {/* navegacao mobile usada pelas areas que ainda passam links ao cabecalho */}
       {links.length > 0 && (
         <nav className="flex gap-1 overflow-x-auto border-t border-ink-700/70 px-5 py-2 md:hidden">
           {links.map((link) => (
