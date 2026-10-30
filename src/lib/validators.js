@@ -59,3 +59,28 @@ export function fieldErrors(error) {
   }
   return out;
 }
+
+export const profileSchema = z
+  .object({
+    phone: z.string().trim().regex(phoneRegex, 'Telefone invalido'),
+    currentPassword: z.string().min(1, 'Informe sua senha atual'),
+    newPassword: z.string().optional().default(''),
+    confirmPassword: z.string().optional().default(''),
+  })
+  .superRefine(({ newPassword, confirmPassword }, ctx) => {
+    if (newPassword && newPassword.length < 6) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['newPassword'],
+        message: 'A nova senha precisa ter no minimo 6 caracteres',
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['confirmPassword'],
+        message: 'As senhas nao conferem',
+      });
+    }
+  });
