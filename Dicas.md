@@ -11,7 +11,10 @@ PRODUÇÃO
 git pull --ff-only origin main
 
 CAMINHO
-cd /home/viralizeai/htdocs/www.viralizeai.online
+cd /home/nomadesface/htdocs/nomadesface.online/cursoerick
+git pull origin main
+chmod +x deploy.sh
+
 
 SUBIR GIT
 git add .
