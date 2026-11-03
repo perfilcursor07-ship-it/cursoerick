@@ -37,10 +37,10 @@ function FeedPost({ second = false }) {
 /** Cena ilustrativa: a pessoa rola o feed e vê o pagamento do conteúdo. */
 export default function HeroArt() {
   return (
-    <div className="relative mx-auto w-full max-w-[500px]">
+    <div className="relative mx-auto w-full max-w-full min-w-0 sm:max-w-[500px]">
       <div className="pointer-events-none absolute -inset-8 -z-10 rounded-[44px] bg-brand-500/15 blur-3xl" />
       <div className="rounded-[30px] border border-brand-400/25 bg-gradient-to-br from-brand-300/20 via-white/5 to-transparent p-[1px] shadow-[0_30px_80px_-28px_rgba(0,0,0,.9)]">
-        <div className="rounded-[29px] bg-[#0b1211] p-3.5 sm:p-4">
+        <div className="min-w-0 rounded-[29px] bg-[#0b1211] p-3 sm:p-4">
           <div className="flex items-center gap-3 px-1 pb-3.5">
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-300 to-brand-700 text-sm font-black text-ink-950 ring-2 ring-brand-300/25">SP</span>
             <div className="min-w-0 flex-1">
@@ -82,7 +82,7 @@ export default function HeroArt() {
 
               <div className="hero-earnings absolute right-[7%] top-1/2 w-[41%] max-w-[185px] rounded-2xl border border-brand-300/35 bg-[#10231d]/95 p-3 shadow-[0_18px_42px_-10px_rgba(0,0,0,.85),0_0_22px_rgba(52,211,153,.15)] backdrop-blur-sm sm:p-4">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-[8px] font-bold uppercase tracking-[0.16em] text-brand-300 sm:text-[9px]">Ganhos da página</span>
+                  <span className="min-w-0 truncate text-[7px] font-bold uppercase tracking-[0.1em] text-brand-300 sm:text-[9px] sm:tracking-[0.16em]">Ganhos da página</span>
                   <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-400/15 text-brand-300"><Check size={11} /></span>
                 </div>
                 <div className="mt-2 flex items-center gap-1.5 text-brand-200">

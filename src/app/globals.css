@@ -19,6 +19,7 @@ body {
   background: var(--bg);
   color: #e8e8ef;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 html {
@@ -60,7 +61,7 @@ body {
 
 @layer components {
   .container-page {
-    @apply mx-auto w-full max-w-6xl px-5;
+    @apply mx-auto w-full max-w-6xl min-w-0 px-4 sm:px-5;
   }
 
   .btn {

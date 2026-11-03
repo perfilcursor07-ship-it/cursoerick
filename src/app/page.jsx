@@ -119,7 +119,7 @@ export default async function HomePage() {
         <div className="absolute -top-40 left-1/2 h-[480px] w-[900px] -translate-x-1/2 rounded-full bg-brand-600/25 blur-[120px]" />
 
         <div className="container-page relative grid items-center gap-12 py-14 md:py-20 lg:grid-cols-[1.05fr_.95fr]">
-          <div className="text-center lg:text-left">
+          <div className="min-w-0 text-center lg:text-left">
             <span className="badge-brand animate-fade-up">
               <Sparkles size={13} />
               {settings['home.badge']}
@@ -152,7 +152,7 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="animate-fade-up">
+          <div className="min-w-0 animate-fade-up">
             <HeroArt />
           </div>
         </div>
