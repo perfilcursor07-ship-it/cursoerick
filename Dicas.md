@@ -12,6 +12,7 @@ git pull --ff-only origin main
 
 CAMINHO
 cd /home/nomadesface/htdocs/nomadesface.online/cursoerick
+git pull --ff-only origin main
 NODE_ENV=production npm run migrate
 npm run build
 pm2 restart cursoerick --update-env

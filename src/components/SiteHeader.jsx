@@ -52,8 +52,8 @@ export default function SiteHeader({ siteName, user }) {
                   href="/cadastro"
                   className="inline-flex h-9 items-center gap-1.5 rounded-full bg-brand-400 px-3 text-[11px] font-bold text-ink-950 shadow-[0_8px_22px_-8px_rgba(52,211,153,.65)] transition hover:bg-brand-300 sm:px-4 sm:text-xs"
                 >
-                  <span className="sm:hidden">Começar</span>
-                  <span className="hidden sm:inline">Criar conta</span>
+                  <span className="sm:hidden">Cadastre-se</span>
+                  <span className="hidden sm:inline">Cadastre-se</span>
                   <ArrowUpRight size={14} />
                 </Link>
               </>
