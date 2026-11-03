@@ -13,10 +13,32 @@ const PALETTES = [
   { bg: 'from-green-500 via-teal-950 to-black', glow: 'bg-green-300', tag: 'text-green-200' },
 ];
 
+/**
+ * "Boas-vindas: como funciona ganhar em dolar"
+ *   -> { chamada: "Boas-vindas", apoio: "Como funciona ganhar em dolar" }
+ * Sem dois-pontos o titulo inteiro vira a chamada.
+ */
+function splitLessonTitle(title) {
+  const texto = String(title || '').trim();
+  const corte = texto.indexOf(':');
+
+  if (corte > 0 && corte < texto.length - 1) {
+    const apoio = texto.slice(corte + 1).trim();
+    return {
+      chamada: texto.slice(0, corte).trim(),
+      apoio: apoio.charAt(0).toUpperCase() + apoio.slice(1),
+    };
+  }
+
+  return { chamada: texto, apoio: null };
+}
+
 /** Arte do cartaz: a capa enviada pelo admin ou um cartaz gerado com o titulo. */
 export function PosterArt({ lesson, index, tone = 0, compact = false }) {
+  const number = String(index).padStart(2, '0');
+
   if (lesson.thumbnail_url) {
-    const isWelcomeLesson = lesson.slug === 'aula-01-boas-vindas-como-funciona-ganhar-em-dolar';
+    const { chamada, apoio } = splitLessonTitle(lesson.title);
     return (
       <>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -26,25 +48,31 @@ export function PosterArt({ lesson, index, tone = 0, compact = false }) {
           loading="lazy"
           className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
         />
-        {isWelcomeLesson && (
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/20">
-            <span className="absolute left-3 top-3 rounded bg-brand-400 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-black shadow-lg">
-              Aula 01
-            </span>
-            <div className="absolute inset-x-3 bottom-10">
-              <p className="font-brush text-[19px] uppercase leading-none text-white drop-shadow-lg">Boas-vindas</p>
-              <p className="mt-1 text-[9px] font-semibold leading-tight text-emerald-100 drop-shadow-lg">
-                Como funciona ganhar em dólar
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/20">
+          <span className="absolute left-3 top-3 rounded bg-brand-400 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-black shadow-lg">
+            Aula {number}
+          </span>
+          <div className="absolute inset-x-3 bottom-10">
+            <p
+              className={[
+                'line-clamp-3 font-brush uppercase leading-none text-white drop-shadow-lg',
+                compact ? 'text-[17px]' : 'text-[19px]',
+              ].join(' ')}
+            >
+              {chamada}
+            </p>
+            {apoio && (
+              <p className="mt-1 line-clamp-2 text-[9px] font-semibold leading-tight text-emerald-100 drop-shadow-lg">
+                {apoio}
               </p>
-            </div>
+            )}
           </div>
-        )}
+        </div>
       </>
     );
   }
 
   const p = PALETTES[tone % PALETTES.length];
-  const number = String(index).padStart(2, '0');
 
   return (
     <div className={`absolute inset-0 overflow-hidden bg-gradient-to-br ${p.bg}`}>
@@ -94,7 +122,6 @@ function statusLabel(lesson) {
 export default function PosterCard({ lesson, index, tone = 0 }) {
   const { state } = lesson;
   const locked = !state.unlocked;
-  const hasArt = Boolean(lesson.thumbnail_url);
   const watched =
     !locked && state.secondsWatched > 0 && lesson.duration_seconds > 0
       ? Math.min(100, Math.round((state.secondsWatched / lesson.duration_seconds) * 100))
@@ -139,13 +166,8 @@ export default function PosterCard({ lesson, index, tone = 0 }) {
         </div>
       )}
 
-      {/* rodape: com arte propria o titulo so aparece no hover */}
+      {/* rodape: o titulo ja vem desenhado sobre a arte, aqui fica so o estado */}
       <div className="absolute inset-x-0 bottom-0 z-10 p-3 sm:p-4">
-        {hasArt && (
-          <p className="mb-1 line-clamp-2 text-[12px] font-semibold leading-tight text-white opacity-0 transition group-hover:opacity-100">
-            {lesson.title}
-          </p>
-        )}
         <span
           className={[
             'inline-flex max-w-full items-center truncate rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider sm:px-2 sm:text-[10px]',
