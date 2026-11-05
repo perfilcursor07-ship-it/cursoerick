@@ -34,8 +34,10 @@ function splitLessonTitle(title) {
 }
 
 /** Arte do cartaz: a capa enviada pelo admin ou um cartaz gerado com o titulo. */
-export function PosterArt({ lesson, index, tone = 0, compact = false }) {
+export function PosterArt({ lesson, index, tone = 0, compact = false, lifted = false }) {
   const number = String(index).padStart(2, '0');
+  // com aviso de bloqueio no pe do cartaz o titulo precisa subir para nao encostar
+  const bottom = lifted ? 'bottom-[72px] sm:bottom-[78px]' : 'bottom-10 sm:bottom-12';
 
   if (lesson.thumbnail_url) {
     const { chamada, apoio } = splitLessonTitle(lesson.title);
@@ -52,7 +54,7 @@ export function PosterArt({ lesson, index, tone = 0, compact = false }) {
           <span className="absolute left-3 top-3 rounded bg-brand-400 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-black shadow-lg">
             Aula {number}
           </span>
-          <div className="absolute inset-x-3 bottom-10">
+          <div className={`absolute inset-x-3 ${lifted ? 'bottom-[72px] sm:bottom-[78px]' : 'bottom-10'}`}>
             <p
               className={[
                 'line-clamp-3 font-brush uppercase leading-none text-white drop-shadow-lg',
@@ -94,8 +96,8 @@ export function PosterArt({ lesson, index, tone = 0, compact = false }) {
         className={[
           'absolute line-clamp-4 font-brush uppercase leading-[1.05] text-white drop-shadow-[0_2px_10px_rgba(0,0,0,.7)]',
           compact
-            ? 'inset-x-3 bottom-10 text-[17px]'
-            : 'inset-x-3 bottom-10 text-[19px] sm:inset-x-4 sm:bottom-12 sm:text-[23px] lg:text-[25px]',
+            ? `inset-x-3 ${lifted ? 'bottom-[72px]' : 'bottom-10'} text-[17px]`
+            : `inset-x-3 sm:inset-x-4 ${bottom} text-[19px] sm:text-[23px] lg:text-[25px]`,
         ].join(' ')}
       >
         {lesson.title}
@@ -104,15 +106,54 @@ export function PosterArt({ lesson, index, tone = 0, compact = false }) {
   );
 }
 
-function statusLabel(lesson) {
+/** Cor do selo de estado no pe do cartaz. */
+const BADGES = {
+  open: 'bg-brand-400 text-black',
+  done: 'bg-white/15 text-brand-100 ring-1 ring-inset ring-brand-300/40',
+  sequence: 'bg-amber-400/20 text-amber-100 ring-1 ring-inset ring-amber-300/40',
+  locked: 'bg-white/10 text-white/70 ring-1 ring-inset ring-white/15',
+};
+
+/**
+ * Estado da aula no cartaz: o texto do selo e o aviso que explica o que
+ * o aluno precisa fazer para abrir (ou terminar) a aula.
+ */
+function lessonStatus(lesson) {
   const { state } = lesson;
+
   if (!state.unlocked) {
-    if (state.lock?.code === 'scheduled' && lesson.release_at) return formatDateTime(lesson.release_at);
-    if (state.lock?.code === 'sequence') return 'Conclua a anterior';
-    return 'Em breve';
+    if (state.lock?.code === 'scheduled' && lesson.release_at) {
+      return {
+        tone: 'locked',
+        label: formatDateTime(lesson.release_at),
+        hint: 'Liberação automática nesta data.',
+      };
+    }
+    if (state.lock?.code === 'sequence') {
+      return {
+        tone: 'sequence',
+        label: 'Conclua a anterior',
+        hint: 'Assista as aulas anteriores e marque como concluída para liberar esta.',
+      };
+    }
+    return {
+      tone: 'locked',
+      label: 'Aula bloqueada',
+      hint: 'Em breve será liberada.',
+    };
   }
-  if (state.completed) return 'Concluída';
-  return lesson.duration_seconds > 0 ? formatDuration(lesson.duration_seconds) : 'Assistir';
+
+  if (state.completed) {
+    return { tone: 'done', label: 'Concluída', hint: 'Disponível para rever quando quiser.' };
+  }
+  if (state.secondsWatched > 0) {
+    return { tone: 'open', label: 'Continuar', hint: 'Termine e marque como concluída.' };
+  }
+  return {
+    tone: 'open',
+    label: lesson.duration_seconds > 0 ? formatDuration(lesson.duration_seconds) : 'Assistir',
+    hint: 'Assista e marque como concluída.',
+  };
 }
 
 /**
@@ -122,6 +163,7 @@ function statusLabel(lesson) {
 export default function PosterCard({ lesson, index, tone = 0 }) {
   const { state } = lesson;
   const locked = !state.unlocked;
+  const status = lessonStatus(lesson);
   const watched =
     !locked && state.secondsWatched > 0 && lesson.duration_seconds > 0
       ? Math.min(100, Math.round((state.secondsWatched / lesson.duration_seconds) * 100))
@@ -138,7 +180,7 @@ export default function PosterCard({ lesson, index, tone = 0 }) {
       ].join(' ')}
     >
       <div className={locked ? 'absolute inset-0 brightness-[.6] saturate-[.45]' : 'absolute inset-0'}>
-        <PosterArt lesson={lesson} index={index} tone={tone} />
+        <PosterArt lesson={lesson} index={index} tone={tone} lifted={locked} />
       </div>
 
       {/* vinheta para o rodape respirar */}
@@ -170,12 +212,19 @@ export default function PosterCard({ lesson, index, tone = 0 }) {
       <div className="absolute inset-x-0 bottom-0 z-10 p-3 sm:p-4">
         <span
           className={[
-            'inline-flex max-w-full items-center truncate rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider sm:px-2 sm:text-[10px]',
-            locked ? 'bg-white/10 text-white/60' : 'bg-brand-400/90 text-black',
+            'inline-flex max-w-full items-center gap-1 truncate rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider sm:px-2 sm:text-[10px]',
+            BADGES[status.tone],
           ].join(' ')}
         >
-          {statusLabel(lesson)}
+          {locked && <Lock size={9} className="shrink-0" />}
+          <span className="truncate">{status.label}</span>
         </span>
+
+        {locked && (
+          <p className="mt-1.5 line-clamp-2 text-[9px] font-medium leading-snug text-white/65 sm:text-[10px]">
+            {status.hint}
+          </p>
+        )}
       </div>
 
       {/* barra de progresso de quem ja comecou (sempre visivel) */}
@@ -191,10 +240,7 @@ export default function PosterCard({ lesson, index, tone = 0 }) {
 
   if (locked) {
     return (
-      <div
-        className={`${size} cursor-not-allowed select-none`}
-        title={state.lock?.message || 'Aguardando liberacao'}
-      >
+      <div className={`${size} cursor-not-allowed select-none`} title={status.hint}>
         {inner}
       </div>
     );

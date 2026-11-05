@@ -71,14 +71,19 @@ export default async function AulaPage({ params }) {
             )}
           </span>
 
-          <h1 className="mt-6 text-xl font-bold text-white">{lesson.title}</h1>
+          <span className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-zinc-400 ring-1 ring-inset ring-white/10">
+            <Lock size={11} />
+            {lock?.code === 'sequence' ? 'Conclua a aula anterior' : 'Aula bloqueada'}
+          </span>
 
-          <p className="mx-auto mt-3 max-w-sm text-sm text-zinc-400">
+          <h1 className="mt-3 text-xl font-bold text-white">{lesson.title}</h1>
+
+          <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-zinc-400">
             {lock?.code === 'scheduled' && lesson.release_at
-              ? `Esta aula sera liberada automaticamente em ${formatDateTime(lesson.release_at)}.`
+              ? `Esta aula será liberada automaticamente em ${formatDateTime(lesson.release_at)}.`
               : lock?.code === 'sequence'
-                ? 'Conclua a aula anterior para desbloquear este conteudo.'
-                : 'Esta aula ainda nao foi liberada. Voce recebera um aviso assim que ela abrir.'}
+                ? 'Assista as aulas anteriores e marque cada uma como concluída para liberar esta.'
+                : 'Em breve esta aula será liberada. Você recebe um aviso assim que ela abrir.'}
           </p>
 
           <Link href="/painel" className="btn-primary mt-8">
@@ -153,7 +158,11 @@ export default async function AulaPage({ params }) {
                 <span className="inline-flex min-w-0 max-w-[48%] cursor-not-allowed items-center gap-2 rounded-xl border border-ink-600 bg-ink-800/40 px-3 py-1.5 text-xs text-zinc-500">
                   <Lock size={14} className="shrink-0" />
                   <span className="min-w-0 truncate">
-                    {!completed ? 'Conclua esta aula' : nextLesson?.lock?.code === 'locked' ? 'Aguardando liberação' : 'Aula bloqueada'}
+                    {!completed
+                      ? 'Marque esta como concluída'
+                      : nextLesson?.lock?.code === 'scheduled'
+                        ? 'Liberação programada'
+                        : 'Bloqueada - em breve'}
                   </span>
                 </span>
               )

@@ -4,6 +4,7 @@ import { currentUser } from '@/lib/auth';
 import { getCourseTree } from '@/lib/access';
 import CourseHero from '@/components/CourseHero';
 import LessonRow from '@/components/LessonRow';
+import ProgressNotice from '@/components/ProgressNotice';
 
 export const metadata = { title: 'Minhas aulas' };
 export const dynamic = 'force-dynamic';
@@ -73,6 +74,10 @@ export default async function PainelPage({ searchParams }) {
   const nextPos = Math.max(0, flat.findIndex((f) => f.lesson.id === stats.nextLesson?.id));
   const featured = flat.slice(nextPos, nextPos + 3);
 
+  // para o aviso: a aula que o aluno precisa terminar e a primeira ainda bloqueada
+  const current = flat.find((f) => f.lesson.state.unlocked && !f.lesson.state.completed) || null;
+  const blocked = flat.find((f) => !f.lesson.state.unlocked) || null;
+
   return (
     <main className="pb-16">
       <CourseHero
@@ -84,8 +89,19 @@ export default async function PainelPage({ searchParams }) {
         courses={courses}
       />
 
-      {/* prateleiras de aulas (sobem por cima do banner, como no streaming) */}
-      <div id="aulas" className="relative z-10 -mt-24 space-y-4 sm:space-y-8">
+      {/* aviso + prateleiras de aulas (sobem por cima do banner, como no streaming) */}
+      <div id="aulas" className="relative z-10 -mt-20 space-y-5 sm:space-y-8">
+        {stats.totalLessons > 0 && (
+          <div className="container-page">
+            <ProgressNotice
+              stats={stats}
+              current={current}
+              blocked={blocked}
+              sequential={Boolean(course.sequential)}
+            />
+          </div>
+        )}
+
         {rows.map((mod) =>
           mod.lessons.length ? (
             <LessonRow

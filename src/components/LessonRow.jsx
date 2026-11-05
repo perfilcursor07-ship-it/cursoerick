@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 import PosterCard from './PosterCard';
 
 /** "Modulo 1 - A base do jogo" -> { eyebrow: "Modulo 1", name: "A base do jogo" } */
@@ -48,6 +48,8 @@ export default function LessonRow({ title, subtitle, lessons, startIndex = 1, to
   const { eyebrow, name } = splitTitle(title);
   const unlocked = lessons.filter((l) => l.state.unlocked).length;
   const completed = lessons.filter((l) => l.state.completed).length;
+  const percent = lessons.length ? Math.round((completed / lessons.length) * 100) : 0;
+  const allDone = lessons.length > 0 && completed === lessons.length;
 
   const arrow =
     'absolute inset-y-4 z-30 hidden w-14 place-items-center text-white opacity-0 transition ' +
@@ -55,7 +57,7 @@ export default function LessonRow({ title, subtitle, lessons, startIndex = 1, to
 
   return (
     <section className="group/row relative">
-      <div className="container-page flex items-end justify-between gap-4">
+      <div className="container-page flex items-end justify-between gap-3">
         <div className="min-w-0">
           <h2 className="flex items-center gap-2 truncate text-lg font-bold tracking-tight text-white sm:text-2xl">
             {eyebrow && (
@@ -66,23 +68,32 @@ export default function LessonRow({ title, subtitle, lessons, startIndex = 1, to
             <span className="truncate">{name}</span>
             <ChevronRight
               size={22}
-              className="shrink-0 -translate-x-1 text-brand-300 opacity-0 transition group-hover/row:translate-x-0 group-hover/row:opacity-100"
+              className="hidden shrink-0 -translate-x-1 text-brand-300 opacity-0 transition group-hover/row:translate-x-0 group-hover/row:opacity-100 sm:block"
             />
           </h2>
           {subtitle && <p className="mt-0.5 truncate text-xs text-zinc-500 sm:text-sm">{subtitle}</p>}
         </div>
 
-        <div className="hidden shrink-0 items-center gap-2 sm:flex">
-          <span className="text-[11px] font-semibold text-zinc-500">
-            {completed}/{lessons.length} concluídas
+        <div className="flex shrink-0 items-center gap-2.5">
+          {allDone ? (
+            <span className="hidden items-center gap-1 rounded-full bg-brand-400/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-200 ring-1 ring-inset ring-brand-300/30 sm:inline-flex">
+              <Check size={11} strokeWidth={3} /> Módulo concluído
+            </span>
+          ) : unlocked === 0 ? (
+            <span className="hidden items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white/60 sm:inline-flex">
+              <Lock size={11} /> Em breve
+            </span>
+          ) : null}
+
+          <span className="text-[11px] font-semibold tabular-nums text-zinc-400">
+            {completed}/{lessons.length}
           </span>
-          <span className="h-1 w-16 overflow-hidden rounded-full bg-white/10">
-            <span
-              className="block h-full rounded-full bg-brand-400"
-              style={{ width: `${Math.round((completed / lessons.length) * 100)}%` }}
-            />
+          <span className="h-1 w-12 overflow-hidden rounded-full bg-white/10 sm:w-20">
+            <span className="block h-full rounded-full bg-brand-400" style={{ width: `${percent}%` }} />
           </span>
-          <span className="sr-only">{unlocked} liberadas</span>
+          <span className="sr-only">
+            {completed} de {lessons.length} aulas concluídas, {unlocked} liberadas
+          </span>
         </div>
       </div>
 

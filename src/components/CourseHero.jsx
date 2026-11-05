@@ -36,7 +36,7 @@ export default function CourseHero({ course, stats, firstName, featured = [], mo
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-ink-950 via-ink-950/80 to-transparent" />
       </div>
 
-      <div className="container-page grid min-h-[380px] grid-cols-1 items-center gap-10 pb-28 pt-10 md:min-h-[430px] lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="container-page grid min-h-[360px] grid-cols-1 items-center gap-10 pb-32 pt-10 md:min-h-[420px] lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="max-w-2xl animate-fade-up">
           {courses.length > 1 && (
             <nav className="mb-6 flex flex-wrap gap-2" aria-label="Seus cursos">
@@ -66,19 +66,19 @@ export default function CourseHero({ course, stats, firstName, featured = [], mo
             {titleLead} {titleAccent && <span className="text-brand-300">{titleAccent}</span>}
           </h1>
 
-          <div className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs font-semibold text-zinc-300">
-            <span className="text-brand-300">{started ? `${stats.percent}% concluído` : 'Novo pra você'}</span>
-            <span className="text-zinc-600">•</span>
-            <span>{stats.totalLessons} aulas</span>
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-[11px] font-bold">
+            <span className="rounded-full bg-brand-400/15 px-2.5 py-1 text-brand-200 ring-1 ring-inset ring-brand-300/30">
+              {started ? `${stats.percent}% concluído` : 'Novo pra você'}
+            </span>
+            <span className="rounded-full bg-white/10 px-2.5 py-1 text-zinc-200 backdrop-blur">
+              {stats.totalLessons} aulas
+            </span>
             {moduleCount > 0 && (
-              <>
-                <span className="text-zinc-600">•</span>
-                <span>
-                  {moduleCount} {moduleCount === 1 ? 'módulo' : 'módulos'}
-                </span>
-              </>
+              <span className="rounded-full bg-white/10 px-2.5 py-1 text-zinc-200 backdrop-blur">
+                {moduleCount} {moduleCount === 1 ? 'módulo' : 'módulos'}
+              </span>
             )}
-            <span className="rounded border border-white/25 px-1.5 py-px text-[10px] text-zinc-200">
+            <span className="rounded-full bg-white/10 px-2.5 py-1 text-zinc-200 backdrop-blur">
               {stats.totalUnlocked} {stats.totalUnlocked === 1 ? 'liberada' : 'liberadas'}
             </span>
           </div>
@@ -111,13 +111,20 @@ export default function CourseHero({ course, stats, firstName, featured = [], mo
             </a>
           </div>
 
-          {next && (
+          {stats.totalLessons > 0 && (
             <div className="mt-6 max-w-sm">
               <div className="flex items-center justify-between gap-3 text-xs text-zinc-400">
                 <span className="truncate">
-                  {started ? 'Próxima' : 'Comece por'}: <span className="text-zinc-200">{next.title}</span>
+                  {next ? (
+                    <>
+                      {started ? 'Próxima' : 'Comece por'}:{' '}
+                      <span className="text-zinc-200">{next.title}</span>
+                    </>
+                  ) : (
+                    'Você está em dia com as aulas liberadas'
+                  )}
                 </span>
-                <span className="shrink-0 font-semibold text-zinc-300">
+                <span className="shrink-0 font-semibold tabular-nums text-zinc-300">
                   {stats.totalCompleted}/{stats.totalLessons}
                 </span>
               </div>
