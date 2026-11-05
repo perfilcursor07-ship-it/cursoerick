@@ -5,7 +5,7 @@ import { jsonError, jsonOk } from '@/lib/utils';
 
 /**
  * Salva o progresso do aluno em uma aula.
- * body: { slug, seconds?, completed? }
+ * body: { slug, seconds?, completed?, feedback?: "like" | "dislike" | null }
  */
 export async function POST(request) {
   let user;
@@ -17,6 +17,12 @@ export async function POST(request) {
 
   const body = await request.json().catch(() => null);
   if (!body?.slug) return jsonError('Aula nao informada');
+
+  const hasFeedback = Object.prototype.hasOwnProperty.call(body, 'feedback');
+  if (hasFeedback && body.feedback !== null && body.feedback !== 'like' && body.feedback !== 'dislike') {
+    return jsonError('Feedback invalido', 422);
+  }
+  const feedback = hasFeedback ? body.feedback : undefined;
 
   const { lesson, unlocked } = await getLessonForUser(body.slug, user);
   if (!lesson) return jsonError('Aula nao encontrada', 404);
@@ -30,21 +36,25 @@ export async function POST(request) {
     .first();
 
   if (existing) {
+    const updates = {
+      seconds_watched: Math.max(existing.seconds_watched, seconds),
+      completed: existing.completed || completed,
+      completed_at:
+        existing.completed || !completed ? existing.completed_at : db.fn.now(),
+      updated_at: db.fn.now(),
+    };
+    if (hasFeedback) updates.feedback = feedback;
+
     await db('lesson_progress')
       .where({ id: existing.id })
-      .update({
-        seconds_watched: Math.max(existing.seconds_watched, seconds),
-        completed: existing.completed || completed,
-        completed_at:
-          existing.completed || !completed ? existing.completed_at : db.fn.now(),
-        updated_at: db.fn.now(),
-      });
+      .update(updates);
   } else {
     await db('lesson_progress').insert({
       user_id: user.id,
       lesson_id: lesson.id,
       seconds_watched: seconds,
       completed,
+      feedback: hasFeedback ? feedback : null,
       completed_at: completed ? db.fn.now() : null,
     });
   }

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, Circle, Loader2, VideoOff } from 'lucide-react';
+import { CheckCircle2, Circle, Loader2, ThumbsDown, ThumbsUp, VideoOff } from 'lucide-react';
 
 /**
  * Player da aula.
@@ -17,6 +17,7 @@ export default function VideoPlayer({
   src,
   startAt = 0,
   completed: completedInitial = false,
+  feedback: feedbackInitial = null,
 }) {
   const router = useRouter();
   const videoRef = useRef(null);
@@ -25,7 +26,9 @@ export default function VideoPlayer({
   const loggingOut = useRef(false);
 
   const [completed, setCompleted] = useState(completedInitial);
+  const [feedback, setFeedback] = useState(feedbackInitial);
   const [saving, setSaving] = useState(false);
+  const [feedbackSaving, setFeedbackSaving] = useState(false);
 
   const send = useCallback(
     async (payload) => {
@@ -109,6 +112,14 @@ export default function VideoPlayer({
     setSaving(false);
   }
 
+  async function handleFeedback(value) {
+    setFeedbackSaving(true);
+    const nextValue = feedback === value ? null : value;
+    const saved = await send({ feedback: nextValue });
+    if (saved) setFeedback(nextValue);
+    setFeedbackSaving(false);
+  }
+
   return (
     <div className="space-y-4">
       <div className="overflow-hidden rounded-2xl border border-ink-700 bg-black shadow-card">
@@ -148,8 +159,8 @@ export default function VideoPlayer({
         )}
       </div>
 
-      <div className="flex items-center justify-between gap-4">
-        <p className="text-xs text-zinc-500">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="min-w-0 text-xs text-zinc-500">
           {videoType === 'upload'
             ? 'Seu progresso e salvo automaticamente.'
             : 'Marque como concluida ao terminar de assistir.'}
@@ -159,7 +170,7 @@ export default function VideoPlayer({
           type="button"
           onClick={toggleComplete}
           disabled={completed || saving}
-          className={completed ? 'btn-ghost btn-sm' : 'btn-primary btn-sm'}
+          className={completed ? 'btn-ghost btn-sm w-full sm:w-auto' : 'btn-primary btn-sm w-full sm:w-auto'}
         >
           {saving ? (
             <Loader2 size={14} className="animate-spin" />
@@ -170,6 +181,35 @@ export default function VideoPlayer({
           )}
           {completed ? 'Aula concluida' : 'Marcar como concluida'}
         </button>
+      </div>
+
+      <div className="flex flex-col gap-3 rounded-2xl border border-ink-700 bg-ink-900/50 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-zinc-200">Esta aula foi útil para você?</p>
+          <p className="mt-1 text-xs text-zinc-500">Seu feedback ajuda a melhorar o conteúdo.</p>
+        </div>
+        <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:shrink-0">
+          <button
+            type="button"
+            onClick={() => handleFeedback('like')}
+            disabled={feedbackSaving}
+            aria-pressed={feedback === 'like'}
+            className={feedback === 'like' ? 'btn-primary btn-sm' : 'btn-ghost btn-sm'}
+          >
+            <ThumbsUp size={14} />
+            Gostei
+          </button>
+          <button
+            type="button"
+            onClick={() => handleFeedback('dislike')}
+            disabled={feedbackSaving}
+            aria-pressed={feedback === 'dislike'}
+            className={feedback === 'dislike' ? 'btn-danger btn-sm' : 'btn-ghost btn-sm'}
+          >
+            <ThumbsDown size={14} />
+            Não gostei
+          </button>
+        </div>
       </div>
     </div>
   );

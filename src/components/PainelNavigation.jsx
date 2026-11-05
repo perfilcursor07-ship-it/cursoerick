@@ -56,17 +56,23 @@ export default function PainelNavigation({ user, children }) {
           aria-label={compact ? label : undefined}
           aria-current={active ? 'page' : undefined}
           className={[
-            'group flex items-center rounded-xl border-l-2 py-2.5 text-[13px] font-medium transition',
-            compact ? 'justify-center px-0' : 'gap-2.5 px-3',
+            'group flex items-center rounded-xl border py-2 text-[12px] font-medium transition',
+            compact ? 'justify-center px-0' : 'gap-2.5 px-2.5',
             active
-              ? 'border-brand-400 bg-gradient-to-r from-brand-500/15 to-brand-500/[0.03] text-white'
-              : 'border-transparent text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100',
+              ? 'border-brand-400/20 bg-brand-500/10 text-white'
+              : 'border-transparent text-zinc-400 hover:border-white/[0.08] hover:bg-white/[0.04] hover:text-zinc-100',
           ].join(' ')}
         >
-          <Icon
-            size={18}
-            className={active ? 'shrink-0 text-brand-300' : 'shrink-0 text-zinc-500 transition group-hover:text-zinc-300'}
-          />
+          <span
+            className={[
+              'grid h-7 w-7 shrink-0 place-items-center rounded-lg transition',
+              active
+                ? 'bg-brand-400 text-ink-950'
+                : 'bg-white/[0.04] text-zinc-500 group-hover:bg-white/[0.08] group-hover:text-zinc-200',
+            ].join(' ')}
+          >
+            <Icon size={14} />
+          </span>
           <span className={compact ? 'sr-only' : 'truncate'}>{label}</span>
         </Link>
       );
@@ -77,21 +83,27 @@ export default function PainelNavigation({ user, children }) {
     <div className="lg:flex lg:min-h-screen">
       <aside
         className={[
-          'sticky top-0 hidden h-screen shrink-0 flex-col border-r border-white/[0.06] bg-gradient-to-b from-ink-900/70 to-ink-950 transition-[width] duration-300 lg:flex',
-          collapsed ? 'w-[68px]' : 'w-56',
+          'fixed inset-y-0 left-0 z-40 hidden h-screen shrink-0 flex-col overflow-y-auto border-r border-white/[0.08] bg-[#09110f]/95 shadow-[18px_0_60px_-42px_rgba(0,0,0,.95)] backdrop-blur-xl transition-[width] duration-300 lg:flex',
+          collapsed ? 'w-16' : 'w-52',
         ].join(' ')}
       >
-        <div className={['flex min-h-[68px] items-center border-b border-white/[0.06]', collapsed ? 'justify-center px-2' : 'justify-between px-5'].join(' ')}>
-          {!collapsed && (
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-300">Área do aluno</p>
-              <p className="mt-1 text-xs text-zinc-500">Seu espaço de aprendizado</p>
+        <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-brand-500/10 blur-3xl" />
+        <div className={['relative flex min-h-[64px] items-center border-b border-white/[0.06]', collapsed ? 'justify-center px-0' : 'justify-between px-3'].join(' ')}>
+          {collapsed ? (
+            <span className="grid h-7 w-7 place-items-center rounded-lg bg-gradient-to-br from-brand-300 to-emerald-700 text-sm font-black text-ink-950 shadow-[0_8px_20px_-10px_rgba(52,211,153,.9)]">N</span>
+          ) : (
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-brand-300 to-emerald-700 text-sm font-black text-ink-950 shadow-[0_8px_20px_-10px_rgba(52,211,153,.9)]">N</span>
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-300">Área do aluno</p>
+                <p className="mt-1 truncate text-xs text-zinc-500">Seu espaço de aprendizado</p>
+              </div>
             </div>
           )}
           <button
             type="button"
             onClick={() => setCollapsed((value) => !value)}
-            className="grid h-9 w-9 place-items-center rounded-xl border border-white/[0.07] bg-white/[0.03] text-zinc-400 transition hover:border-brand-500/30 hover:bg-brand-500/10 hover:text-brand-200"
+            className={["grid place-items-center rounded-xl border border-white/[0.07] bg-white/[0.03] text-zinc-400 transition hover:border-brand-500/30 hover:bg-brand-500/10 hover:text-brand-200", collapsed ? "h-7 w-7" : "h-8 w-8"].join(" ")}
             aria-label={collapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
             aria-expanded={!collapsed}
             title={collapsed ? 'Expandir menu' : 'Recolher menu'}
@@ -100,19 +112,22 @@ export default function PainelNavigation({ user, children }) {
           </button>
         </div>
 
-        <nav className="flex-1 space-y-1.5 px-3 py-5" aria-label="Menu do painel">
-          {renderLinks(collapsed)}
+        <nav className="flex-1 px-2 py-4" aria-label="Menu do painel">
+          {!collapsed && <p className="px-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600">Navegação</p>}
+          <div className={collapsed ? 'space-y-1.5' : 'mt-3 space-y-1.5'}>
+            {renderLinks(collapsed)}
+          </div>
         </nav>
 
-        <div className="border-t border-white/[0.06] p-3">
+        <div className="border-t border-white/[0.06] p-2">
           <div
             className={[
-              'flex min-w-0 items-center rounded-xl bg-white/[0.035]',
-              collapsed ? 'justify-center p-2' : 'gap-3 p-3',
+              'flex min-w-0 items-center rounded-xl border border-white/[0.06] bg-white/[0.035]',
+              collapsed ? 'justify-center p-1.5' : 'gap-2.5 p-2.5',
             ].join(' ')}
             title={collapsed ? `${user.name} · ${user.email}` : undefined}
           >
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-emerald-700 text-xs font-bold text-ink-950 ring-2 ring-brand-400/15">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-emerald-700 text-xs font-bold text-ink-950 ring-2 ring-brand-400/15">
               {initials}
             </span>
             {!collapsed && (
@@ -128,7 +143,7 @@ export default function PainelNavigation({ user, children }) {
         </div>
       </aside>
 
-      <div className="min-w-0 flex-1">
+      <div className={['min-w-0 flex-1', collapsed ? 'lg:ml-16' : 'lg:ml-52'].join(' ')}>
         <div className="px-4 py-3 lg:hidden">
           <button
             type="button"
@@ -177,7 +192,7 @@ export default function PainelNavigation({ user, children }) {
             </nav>
             <div className="mt-auto border-t border-white/[0.06] p-4">
               <div className="flex min-w-0 items-center gap-3 rounded-xl bg-white/[0.035] p-3">
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-emerald-700 text-xs font-bold text-ink-950 ring-2 ring-brand-400/15">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-emerald-700 text-xs font-bold text-ink-950 ring-2 ring-brand-400/15">
                   {initials}
                 </span>
                 <div className="min-w-0">
@@ -193,8 +208,3 @@ export default function PainelNavigation({ user, children }) {
     </div>
   );
 }
-
-
-
-
-

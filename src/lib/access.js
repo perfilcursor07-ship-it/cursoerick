@@ -92,6 +92,7 @@ export async function getCourseTree(courseSlug, user) {
     stateById.set(lesson.id, {
       unlocked,
       completed,
+      feedback: prog?.feedback || null,
       secondsWatched: prog?.seconds_watched || 0,
       lock: unlocked ? null : reason,
       grantedIndividually: grantSet.has(lesson.id),
@@ -136,7 +137,7 @@ export async function getLessonForUser(slug, user) {
   if (!course) return { lesson: null, unlocked: false };
 
   if (user?.role === 'admin') {
-    return { lesson, module: mod, course, unlocked: true, completed: false };
+    return { lesson, module: mod, course, unlocked: true, completed: false, feedback: null };
   }
 
   if (!lesson.is_published || !course.is_published) {
@@ -183,6 +184,7 @@ export async function getLessonForUser(slug, user) {
     course,
     unlocked,
     completed: Boolean(progress?.completed),
+    feedback: progress?.feedback || null,
     secondsWatched: progress?.seconds_watched || 0,
     lock: unlocked ? null : lockReason(lesson, { released, previousDone, sequential: course.sequential }),
   };

@@ -21,6 +21,7 @@ export const POST = withAdmin(async (request) => {
     title: data.title,
     slug,
     description: data.description,
+    task: data.task || null,
     video_type: data.video_type,
     video_url: data.video_type === 'external' ? data.video_url : null,
     video_path: data.video_type === 'upload' ? data.video_path || null : null,

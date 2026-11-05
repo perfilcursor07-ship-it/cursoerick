@@ -7,6 +7,7 @@ import { api, uploadFile } from '@/lib/client';
 const EMPTY = {
   title: '',
   description: '',
+  task: '',
   video_type: 'upload',
   video_url: '',
   video_path: '',
@@ -26,6 +27,7 @@ export default function LessonForm({ moduleId, lesson, onDone, onCancel }) {
           ...EMPTY,
           ...lesson,
           description: lesson.description || '',
+          task: lesson.task || '',
           video_url: lesson.video_url || '',
           video_path: lesson.video_path || '',
           thumbnail_url: lesson.thumbnail_url || '',
@@ -86,6 +88,7 @@ export default function LessonForm({ moduleId, lesson, onDone, onCancel }) {
       module_id: moduleId,
       title: form.title,
       description: form.description,
+      task: form.task,
       video_type: form.video_type,
       video_url: form.video_type === 'external' ? form.video_url : '',
       video_path: form.video_type === 'upload' ? form.video_path : '',
@@ -146,6 +149,21 @@ export default function LessonForm({ moduleId, lesson, onDone, onCancel }) {
           placeholder="O que o aluno vai ver nesta aula"
           value={form.description}
           onChange={(e) => set('description', e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="label">Tarefa desta aula</label>
+        <p className="mb-2 text-xs text-zinc-600">
+          O que o aluno precisa FAZER depois de assistir. Uma tarefa por linha - cada linha
+          aparece numerada na pagina da aula.
+        </p>
+        <textarea
+          rows={4}
+          className="input resize-y"
+          placeholder={'Crie a sua pagina com o nome definido na aula\nSuba a foto de perfil e a capa\nPreencha categoria e descricao'}
+          value={form.task}
+          onChange={(e) => set('task', e.target.value)}
         />
       </div>
 

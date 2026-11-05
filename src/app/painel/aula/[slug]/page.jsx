@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, ArrowRight, CalendarClock, Lock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CalendarClock, ListChecks, Lock } from 'lucide-react';
 import { db } from '@/lib/db';
 import { currentUser } from '@/lib/auth';
 import { getLessonForUser } from '@/lib/access';
@@ -12,6 +12,14 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({ params }) {
   const lesson = await db('lessons').where({ slug: params.slug }).first();
   return { title: lesson?.title || 'Aula' };
+}
+
+/** Quebra a tarefa da aula (uma por linha) em itens limpos. */
+function taskItems(task) {
+  return String(task || '')
+    .split(/\r?\n/)
+    .map((line) => line.replace(/^\s*(?:[-*\u2022]|\d+[.)])\s*/, '').trim())
+    .filter(Boolean);
 }
 
 /** Aula anterior e proxima dentro do mesmo curso. */
@@ -42,8 +50,10 @@ export default async function AulaPage({ params }) {
 
   if (!data.lesson) notFound();
 
-  const { lesson, module: mod, course, unlocked, completed, secondsWatched, lock } = data;
+  const { lesson, module: mod, course, unlocked, completed, feedback, secondsWatched, lock } = data;
+  const tasks = taskItems(lesson.task);
   const nav = await neighbours(course.id, lesson.id);
+  const nextLesson = nav.next ? await getLessonForUser(nav.next.slug, user) : null;
 
   if (!unlocked) {
     return (
@@ -87,8 +97,8 @@ export default async function AulaPage({ params }) {
       : toEmbedUrl(lesson.video_url);
 
   return (
-    <main className="container-page py-8">
-      <div className="flex items-center justify-between gap-4">
+    <main className="container-page min-w-0 py-8">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <Link href="/painel" className="link-muted inline-flex items-center gap-2 text-sm">
           <ArrowLeft size={15} /> Minhas aulas
         </Link>
@@ -97,21 +107,22 @@ export default async function AulaPage({ params }) {
         </span>
       </div>
 
-      <div className="mt-6 grid gap-8 lg:grid-cols-[1.6fr_1fr]">
-        <div>
+      <div className="mt-6 grid min-w-0 gap-8 lg:grid-cols-[1.6fr_1fr]">
+        <div className="min-w-0">
           <VideoPlayer
             slug={lesson.slug}
             videoType={lesson.video_type}
             src={src}
             startAt={secondsWatched}
             completed={completed}
+            feedback={feedback}
           />
 
           <div className="mt-7">
             <p className="text-xs font-semibold uppercase tracking-wide text-brand-300">
               {mod.title}
             </p>
-            <h1 className="mt-2 text-2xl font-bold tracking-tight text-white md:text-3xl">
+            <h1 className="mt-2 break-words text-2xl font-bold tracking-tight text-white md:text-3xl">
               {lesson.title}
             </h1>
 
@@ -122,29 +133,38 @@ export default async function AulaPage({ params }) {
             )}
           </div>
 
-          <div className="mt-8 flex items-center justify-between gap-3 border-t border-ink-700 pt-6">
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-ink-700 pt-6">
             {nav.prev ? (
-              <Link href={`/painel/aula/${nav.prev.slug}`} className="btn-ghost btn-sm">
+              <Link href={`/painel/aula/${nav.prev.slug}`} className="btn-ghost btn-sm min-w-0 max-w-[48%]">
                 <ArrowLeft size={14} />
-                <span className="max-w-[160px] truncate">{nav.prev.title}</span>
+                <span className="min-w-0 max-w-[160px] truncate">{nav.prev.title}</span>
               </Link>
             ) : (
               <span />
             )}
 
             {nav.next && (
-              <Link href={`/painel/aula/${nav.next.slug}`} className="btn-ghost btn-sm">
-                <span className="max-w-[160px] truncate">{nav.next.title}</span>
-                <ArrowRight size={14} />
-              </Link>
+              nextLesson?.unlocked ? (
+                <Link href={`/painel/aula/${nav.next.slug}`} className="btn-ghost btn-sm min-w-0 max-w-[48%]">
+                  <span className="min-w-0 max-w-[160px] truncate">{nav.next.title}</span>
+                  <ArrowRight size={14} />
+                </Link>
+              ) : (
+                <span className="inline-flex min-w-0 max-w-[48%] cursor-not-allowed items-center gap-2 rounded-xl border border-ink-600 bg-ink-800/40 px-3 py-1.5 text-xs text-zinc-500">
+                  <Lock size={14} className="shrink-0" />
+                  <span className="min-w-0 truncate">
+                    {!completed ? 'Conclua esta aula' : nextLesson?.lock?.code === 'locked' ? 'Aguardando liberação' : 'Aula bloqueada'}
+                  </span>
+                </span>
+              )
             )}
           </div>
         </div>
 
         {/* lateral com o resumo do curso */}
-        <aside className="space-y-4">
+        <aside className="min-w-0 space-y-4">
           <div className="card p-5">
-            <h2 className="text-sm font-semibold text-white">{course.title}</h2>
+            <h2 className="break-words text-sm font-semibold text-white">{course.title}</h2>
             {course.subtitle && <p className="mt-1 text-xs text-zinc-500">{course.subtitle}</p>}
             <Link href="/painel" className="btn-ghost btn-sm mt-4 w-full">
               Ver todas as aulas
@@ -152,14 +172,36 @@ export default async function AulaPage({ params }) {
           </div>
 
           <div className="card p-5">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
-              Como funciona a liberacao
+            <h3 className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-brand-300">
+              <ListChecks size={14} /> Tarefa desta aula
             </h3>
-            <ul className="mt-3 space-y-2.5 text-xs leading-relaxed text-zinc-500">
-              <li>- A aula de apresentacao fica sempre aberta.</li>
-              <li>- As demais abrem conforme o administrador libera.</li>
-              <li>- Aulas ja liberadas continuam disponiveis para rever.</li>
-            </ul>
+
+            {mod.description && (
+              <p className="mt-2 text-xs leading-relaxed text-zinc-500">
+                <span className="font-semibold text-zinc-400">{mod.title}:</span> {mod.description}
+              </p>
+            )}
+
+            {tasks.length ? (
+              <ol className="mt-4 space-y-3">
+                {tasks.map((item, index) => (
+                  <li key={item} className="flex gap-2.5 text-xs leading-relaxed text-zinc-300">
+                    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-md border border-brand-500/40 bg-brand-500/10 text-[10px] font-bold text-brand-200">
+                      {index + 1}
+                    </span>
+                    <span className="min-w-0 break-words">{item}</span>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="mt-4 text-xs leading-relaxed text-zinc-500">
+                Aplique nesta semana o que voce acabou de ver antes de avancar para a proxima aula.
+              </p>
+            )}
+
+            <p className="mt-4 border-t border-ink-700 pt-3 text-xs leading-relaxed text-zinc-600">
+              Faca a tarefa e depois marque a aula como concluida.
+            </p>
           </div>
         </aside>
       </div>

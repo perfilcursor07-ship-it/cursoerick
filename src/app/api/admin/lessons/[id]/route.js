@@ -5,6 +5,7 @@ import { jsonError, jsonOk } from '@/lib/utils';
 const ALLOWED = [
   'title',
   'description',
+  'task',
   'video_type',
   'video_url',
   'video_path',

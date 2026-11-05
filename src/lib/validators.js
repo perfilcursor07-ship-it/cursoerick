@@ -22,6 +22,7 @@ export const lessonSchema = z.object({
   module_id: z.coerce.number().int().positive(),
   title: z.string().trim().min(3, 'Titulo muito curto'),
   description: z.string().trim().optional().default(''),
+  task: z.string().trim().optional().default(''),
   video_type: z.enum(['upload', 'external']),
   video_url: z.string().trim().optional().default(''),
   video_path: z.string().trim().optional().default(''),
