@@ -15,7 +15,12 @@ async function loadCourses() {
     db('lessons')
       .join('modules', 'modules.id', 'lessons.module_id')
       .whereIn('modules.course_id', ids)
-      .select('modules.course_id', 'lessons.release_mode', 'lessons.is_released'),
+      .select(
+        'modules.course_id',
+        'lessons.release_mode',
+        'lessons.is_released',
+        'lessons.is_pro'
+      ),
   ]);
 
   return courses.map((course) => {
@@ -25,7 +30,7 @@ async function loadCourses() {
       modulesCount: modules.filter((m) => m.course_id === course.id).length,
       lessonsCount: courseLessons.length,
       releasedCount: courseLessons.filter(
-        (l) => l.release_mode === 'free' || l.is_released
+        (l) => !l.is_pro && (l.release_mode === 'free' || l.is_released)
       ).length,
     };
   });

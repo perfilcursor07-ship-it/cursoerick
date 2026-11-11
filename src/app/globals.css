@@ -125,6 +125,9 @@ body {
   .badge-brand {
     @apply badge border-brand-500/40 bg-brand-500/15 text-brand-200;
   }
+  .badge-pro {
+    @apply badge border-amber-400/40 bg-amber-400/15 text-amber-200;
+  }
 
   .link-muted {
     @apply text-zinc-400 transition hover:text-zinc-100;

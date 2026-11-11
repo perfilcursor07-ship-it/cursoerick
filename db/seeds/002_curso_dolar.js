@@ -1,4 +1,5 @@
 require('dotenv').config();
+const { PRO_MODULE } = require('../data/aulas-pro');
 
 /**
  * Grade do curso "Paginas que Pagam em Dolar".
@@ -160,6 +161,10 @@ const MODULES = [
       },
     ],
   },
+  {
+    ...PRO_MODULE,
+    lessons: PRO_MODULE.lessons.map((lesson) => ({ ...lesson, is_pro: true })),
+  },
 ];
 
 function slugify(text, n) {
@@ -214,6 +219,7 @@ exports.seed = async function seed(knex) {
         video_url: '',
         release_mode: lesson.release_mode || 'manual',
         is_released: Boolean(lesson.is_released),
+        is_pro: Boolean(lesson.is_pro),
         is_published: true,
         position: li + 1,
       });

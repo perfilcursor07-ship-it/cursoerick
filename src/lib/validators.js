@@ -30,6 +30,7 @@ export const lessonSchema = z.object({
   duration_seconds: z.coerce.number().int().min(0).optional().default(0),
   release_mode: z.enum(['free', 'manual', 'scheduled']),
   is_released: z.coerce.boolean().optional().default(false),
+  is_pro: z.coerce.boolean().optional().default(false),
   release_at: z.string().trim().optional().nullable(),
   is_published: z.coerce.boolean().optional().default(true),
   position: z.coerce.number().int().min(0).optional().default(0),

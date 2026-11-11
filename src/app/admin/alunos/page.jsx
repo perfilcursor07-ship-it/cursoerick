@@ -25,6 +25,7 @@ async function loadData() {
       'lessons.title',
       'lessons.release_mode',
       'lessons.is_released',
+      'lessons.is_pro',
       'lessons.release_at',
       'modules.title as moduleTitle'
     );
@@ -33,6 +34,7 @@ async function loadData() {
     id: l.id,
     title: l.title,
     moduleTitle: l.moduleTitle,
+    is_pro: Boolean(l.is_pro),
     openForAll: isGloballyReleased(l),
   }));
 
@@ -70,8 +72,8 @@ export default async function AdminStudentsPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-white">Alunos</h1>
         <p className="mt-2 text-sm text-zinc-400">
-          {students.length} aluno(s) cadastrado(s). Aqui voce bloqueia acessos e libera aulas
-          individualmente.
+          {students.length} aluno(s) cadastrado(s). Aqui voce bloqueia acessos e libera as aulas
+          PRO so para quem e assinante.
         </p>
       </div>
 

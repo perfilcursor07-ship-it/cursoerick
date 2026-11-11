@@ -22,7 +22,7 @@ const PALETTES = [
   { from: '#10b981', mid: '#064e3b', to: '#04090a', glow: '#6ee7b7', accent: '#d1fae5' },
   { from: '#0d9488', mid: '#0b3b3a', to: '#04090c', glow: '#2dd4bf', accent: '#ccfbf1' },
   { from: '#65a30d', mid: '#1a2e05', to: '#060a04', glow: '#facc15', accent: '#fef08a' },
-  { from: '#16a34a', mid: '#052e16', to: '#04090a', glow: '#4ade80', accent: '#dcfce7' },
+  { from: '#d97706', mid: '#451a03', to: '#0a0704', glow: '#fbbf24', accent: '#fde68a' },
 ];
 
 const esc = (s) =>

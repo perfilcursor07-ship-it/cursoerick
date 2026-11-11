@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Check, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Crown, Lock } from 'lucide-react';
 import PosterCard from './PosterCard';
 
 /** "Modulo 1 - A base do jogo" -> { eyebrow: "Modulo 1", name: "A base do jogo" } */
@@ -46,6 +46,7 @@ export default function LessonRow({ title, subtitle, lessons, startIndex = 1, to
   }
 
   const { eyebrow, name } = splitTitle(title);
+  const isProRow = lessons.length > 0 && lessons.every((l) => l.is_pro);
   const unlocked = lessons.filter((l) => l.state.unlocked).length;
   const completed = lessons.filter((l) => l.state.completed).length;
   const percent = lessons.length ? Math.round((completed / lessons.length) * 100) : 0;
@@ -66,6 +67,11 @@ export default function LessonRow({ title, subtitle, lessons, startIndex = 1, to
               </span>
             )}
             <span className="truncate">{name}</span>
+            {isProRow && (
+              <span className="hidden shrink-0 items-center gap-1 rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-200 ring-1 ring-inset ring-amber-300/30 sm:inline-flex">
+                <Crown size={11} /> PRO
+              </span>
+            )}
             <ChevronRight
               size={22}
               className="hidden shrink-0 -translate-x-1 text-brand-300 opacity-0 transition group-hover/row:translate-x-0 group-hover/row:opacity-100 sm:block"

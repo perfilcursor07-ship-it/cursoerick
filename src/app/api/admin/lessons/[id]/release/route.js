@@ -13,6 +13,10 @@ export const POST = withAdmin(async (request, { params }) => {
   const lesson = await db('lessons').where({ id: params.id }).first();
   if (!lesson) return jsonError('Aula nao encontrada', 404);
 
+  if (lesson.is_pro) {
+    return jsonError('Aula PRO so e liberada aluno a aluno em /admin/alunos', 400);
+  }
+
   await db('lessons')
     .where({ id: lesson.id })
     .update({

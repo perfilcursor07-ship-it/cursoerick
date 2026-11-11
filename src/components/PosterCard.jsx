@@ -10,7 +10,7 @@ const PALETTES = [
   { bg: 'from-emerald-500 via-emerald-950 to-black', glow: 'bg-emerald-300', tag: 'text-emerald-200' },
   { bg: 'from-teal-400 via-cyan-950 to-black', glow: 'bg-cyan-300', tag: 'text-cyan-200' },
   { bg: 'from-lime-400 via-green-950 to-black', glow: 'bg-yellow-300', tag: 'text-lime-200' },
-  { bg: 'from-green-500 via-teal-950 to-black', glow: 'bg-green-300', tag: 'text-green-200' },
+  { bg: 'from-amber-400 via-amber-950 to-black', glow: 'bg-amber-300', tag: 'text-amber-200' },
 ];
 
 /**
@@ -51,8 +51,13 @@ export function PosterArt({ lesson, index, tone = 0, compact = false, lifted = f
           className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/20">
-          <span className="absolute left-3 top-3 rounded bg-brand-400 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-black shadow-lg">
-            Aula {number}
+          <span
+            className={[
+              'absolute left-3 top-3 rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-black shadow-lg',
+              lesson.is_pro ? 'bg-amber-400' : 'bg-brand-400',
+            ].join(' ')}
+          >
+            {lesson.is_pro ? 'PRO' : `Aula ${number}`}
           </span>
           <div className={`absolute inset-x-3 ${lifted ? 'bottom-[72px] sm:bottom-[78px]' : 'bottom-10'}`}>
             <p
@@ -87,9 +92,11 @@ export function PosterArt({ lesson, index, tone = 0, compact = false, lifted = f
       </span>
 
       <span
-        className={`absolute left-3 top-3 rounded bg-black/35 px-1.5 py-0.5 text-[9px] sm:left-4 sm:top-4 sm:text-[10px] font-black uppercase tracking-[0.2em] backdrop-blur-sm ${p.tag}`}
+        className={`absolute left-3 top-3 rounded bg-black/35 px-1.5 py-0.5 text-[9px] sm:left-4 sm:top-4 sm:text-[10px] font-black uppercase tracking-[0.2em] backdrop-blur-sm ${
+          lesson.is_pro ? 'text-amber-200' : p.tag
+        }`}
       >
-        Aula {number}
+        {lesson.is_pro ? 'PRO' : `Aula ${number}`}
       </span>
 
       <p
@@ -112,6 +119,7 @@ const BADGES = {
   done: 'bg-white/15 text-brand-100 ring-1 ring-inset ring-brand-300/40',
   sequence: 'bg-amber-400/20 text-amber-100 ring-1 ring-inset ring-amber-300/40',
   locked: 'bg-white/10 text-white/70 ring-1 ring-inset ring-white/15',
+  pro: 'bg-amber-400 text-black',
 };
 
 /**
@@ -134,6 +142,13 @@ function lessonStatus(lesson) {
         tone: 'sequence',
         label: 'Conclua a anterior',
         hint: 'Assista as aulas anteriores e marque como concluída para liberar esta.',
+      };
+    }
+    if (state.lock?.code === 'pro' || lesson.is_pro) {
+      return {
+        tone: 'pro',
+        label: 'Só para assinantes',
+        hint: 'Conteúdo exclusivo do plano PRO. Libere com o administrador.',
       };
     }
     return {

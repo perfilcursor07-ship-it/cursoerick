@@ -13,6 +13,7 @@ const ALLOWED = [
   'duration_seconds',
   'release_mode',
   'is_released',
+  'is_pro',
   'release_at',
   'is_published',
   'position',
@@ -27,7 +28,14 @@ export const PATCH = withAdmin(async (request, { params }) => {
   }
   if (!Object.keys(patch).length) return jsonError('Nada para atualizar');
 
-  if (patch.release_mode === 'free') patch.is_released = true;
+  if ('is_pro' in patch) patch.is_pro = Boolean(patch.is_pro);
+  if (patch.is_pro) {
+    patch.is_released = false;
+    patch.release_mode = 'manual';
+    patch.release_at = null;
+  } else if (patch.release_mode === 'free') {
+    patch.is_released = true;
+  }
   if ('release_at' in patch) {
     patch.release_at = patch.release_at ? new Date(patch.release_at) : null;
   }

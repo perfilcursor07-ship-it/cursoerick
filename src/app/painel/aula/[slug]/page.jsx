@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, ArrowRight, CalendarClock, ListChecks, Lock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CalendarClock, Crown, ListChecks, Lock } from 'lucide-react';
 import { db } from '@/lib/db';
 import { currentUser } from '@/lib/auth';
 import { getLessonForUser } from '@/lib/access';
@@ -66,14 +66,20 @@ export default async function AulaPage({ params }) {
           <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl border border-ink-600 bg-ink-800">
             {lock?.code === 'scheduled' ? (
               <CalendarClock size={26} className="text-amber-300" />
+            ) : lock?.code === 'pro' || lesson.is_pro ? (
+              <Crown size={26} className="text-amber-300" />
             ) : (
               <Lock size={24} className="text-zinc-500" />
             )}
           </span>
 
           <span className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-zinc-400 ring-1 ring-inset ring-white/10">
-            <Lock size={11} />
-            {lock?.code === 'sequence' ? 'Conclua a aula anterior' : 'Aula bloqueada'}
+            {lock?.code === 'pro' || lesson.is_pro ? <Crown size={11} /> : <Lock size={11} />}
+            {lock?.code === 'sequence'
+              ? 'Conclua a aula anterior'
+              : lock?.code === 'pro' || lesson.is_pro
+                ? 'Só para assinantes'
+                : 'Aula bloqueada'}
           </span>
 
           <h1 className="mt-3 text-xl font-bold text-white">{lesson.title}</h1>
@@ -83,7 +89,9 @@ export default async function AulaPage({ params }) {
               ? `Esta aula será liberada automaticamente em ${formatDateTime(lesson.release_at)}.`
               : lock?.code === 'sequence'
                 ? 'Assista as aulas anteriores e marque cada uma como concluída para liberar esta.'
-                : 'Em breve esta aula será liberada. Você recebe um aviso assim que ela abrir.'}
+                : lock?.code === 'pro' || lesson.is_pro
+                  ? 'Esta aula faz parte do modulo PRO. O administrador libera o acesso so para alunos assinantes.'
+                  : 'Em breve esta aula será liberada. Você recebe um aviso assim que ela abrir.'}
           </p>
 
           <Link href="/painel" className="btn-primary mt-8">
@@ -124,8 +132,13 @@ export default async function AulaPage({ params }) {
           />
 
           <div className="mt-7">
-            <p className="text-xs font-semibold uppercase tracking-wide text-brand-300">
+            <p className="inline-flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wide text-brand-300">
               {mod.title}
+              {lesson.is_pro ? (
+                <span className="badge-pro normal-case">
+                  <Crown size={11} /> PRO
+                </span>
+              ) : null}
             </p>
             <h1 className="mt-2 break-words text-2xl font-bold tracking-tight text-white md:text-3xl">
               {lesson.title}
@@ -162,7 +175,9 @@ export default async function AulaPage({ params }) {
                       ? 'Marque esta como concluída'
                       : nextLesson?.lock?.code === 'scheduled'
                         ? 'Liberação programada'
-                        : 'Bloqueada - em breve'}
+                        : nextLesson?.lock?.code === 'pro'
+                          ? 'Só para assinantes'
+                          : 'Bloqueada - em breve'}
                   </span>
                 </span>
               )

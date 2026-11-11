@@ -32,6 +32,7 @@ export default async function AdminCoursePage({ params }) {
       .filter((l) => l.module_id === mod.id)
       .map((l) => ({
         ...l,
+        is_pro: Boolean(l.is_pro),
         created_at: l.created_at ? String(l.created_at) : null,
         updated_at: l.updated_at ? String(l.updated_at) : null,
         release_at: l.release_at ? String(l.release_at) : null,
@@ -47,6 +48,7 @@ export default async function AdminCoursePage({ params }) {
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-white">{course.title}</h1>
         <p className="mt-2 text-sm text-zinc-400">
           Monte os modulos, envie os videos e use o botao de liberar para soltar cada aula.
+          Aulas PRO nao abrem para todos: voce libera em Alunos, so para assinantes.
         </p>
       </div>
 

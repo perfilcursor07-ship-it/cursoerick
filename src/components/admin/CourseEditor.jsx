@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import {
   CalendarClock,
+  Crown,
   Film,
   ImageIcon,
   Link2,
@@ -78,13 +79,19 @@ export default function CourseEditor({ course, modules }) {
     setShowModuleForm(false);
   }
 
+  function isPro(lesson) {
+    return Boolean(lesson.is_pro);
+  }
+
   function isOpen(lesson) {
+    if (isPro(lesson)) return false;
     if (lesson.release_mode === 'free') return true;
     if (lesson.release_mode === 'manual') return Boolean(lesson.is_released);
     return Boolean(lesson.release_at) && new Date(lesson.release_at) <= new Date();
   }
 
   const totalLessons = modules.reduce((sum, m) => sum + m.lessons.length, 0);
+  const proLessons = modules.reduce((sum, m) => sum + m.lessons.filter((l) => isPro(l)).length, 0);
   const openLessons = modules.reduce(
     (sum, m) => sum + m.lessons.filter((l) => isOpen(l)).length,
     0
@@ -110,8 +117,9 @@ export default function CourseEditor({ course, modules }) {
             )}
           </div>
           <p className="mt-1 text-xs text-zinc-500">
-            {totalLessons} aulas - {openLessons} liberadas - {totalLessons - openLessons} com
-            cadeado
+            {totalLessons} aulas - {openLessons} liberadas
+            {proLessons ? ` - ${proLessons} PRO (so assinante)` : ''} -{' '}
+            {totalLessons - openLessons - proLessons} com cadeado
           </p>
         </div>
 
@@ -188,6 +196,7 @@ export default function CourseEditor({ course, modules }) {
             <div className="divide-y divide-ink-700/70">
               {mod.lessons.map((lesson, li) => {
                 const open = isOpen(lesson);
+                const pro = isPro(lesson);
 
                 if (editingLesson?.id === lesson.id) {
                   return (
@@ -230,49 +239,64 @@ export default function CourseEditor({ course, modules }) {
                     </span>
 
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-zinc-100">{lesson.title}</p>
+                      <p className="flex items-center gap-2 truncate text-sm font-medium text-zinc-100">
+                        <span className="truncate">{lesson.title}</span>
+                        {pro && (
+                          <span className="badge-pro shrink-0">
+                            <Crown size={10} /> PRO
+                          </span>
+                        )}
+                      </p>
                       <p className="truncate text-xs text-zinc-500">
-                        {lesson.release_mode === 'free'
-                          ? 'aula aberta para todos'
-                          : lesson.release_mode === 'scheduled'
-                            ? `agendada para ${formatDateTime(lesson.release_at)}`
-                            : open
-                              ? 'liberada manualmente'
-                              : 'aguardando liberacao'}
+                        {pro
+                          ? 'so para assinante - libere em Alunos'
+                          : lesson.release_mode === 'free'
+                            ? 'aula aberta para todos'
+                            : lesson.release_mode === 'scheduled'
+                              ? `agendada para ${formatDateTime(lesson.release_at)}`
+                              : open
+                                ? 'liberada manualmente'
+                                : 'aguardando liberacao'}
                         {lesson.video_type === 'upload' && !lesson.video_path && ' - sem video'}
                         {lesson.video_type === 'external' && !lesson.video_url && ' - sem link'}
                       </p>
                     </div>
 
                     <div className="flex shrink-0 items-center gap-2">
-                      {lesson.release_mode === 'scheduled' && !open && (
+                      {pro ? (
+                        <span className="badge-pro hidden sm:inline-flex">
+                          <Crown size={11} /> assinante
+                        </span>
+                      ) : lesson.release_mode === 'scheduled' && !open ? (
                         <span className="badge-soon hidden sm:inline-flex">
                           <CalendarClock size={11} /> agendada
                         </span>
-                      )}
+                      ) : null}
 
-                      <button
-                        type="button"
-                        disabled={busy || lesson.release_mode === 'free'}
-                        onClick={() => toggleRelease(lesson)}
-                        className={open ? 'btn-ghost btn-sm' : 'btn-primary btn-sm'}
-                        title={
-                          lesson.release_mode === 'free'
-                            ? 'Aula sempre aberta'
-                            : open
-                              ? 'Travar novamente'
-                              : 'Liberar para todos os alunos'
-                        }
-                      >
-                        {busy ? (
-                          <Loader2 size={13} className="animate-spin" />
-                        ) : open ? (
-                          <Unlock size={13} />
-                        ) : (
-                          <Lock size={13} />
-                        )}
-                        <span className="hidden sm:inline">{open ? 'Liberada' : 'Liberar'}</span>
-                      </button>
+                      {!pro && (
+                        <button
+                          type="button"
+                          disabled={busy || lesson.release_mode === 'free'}
+                          onClick={() => toggleRelease(lesson)}
+                          className={open ? 'btn-ghost btn-sm' : 'btn-primary btn-sm'}
+                          title={
+                            lesson.release_mode === 'free'
+                              ? 'Aula sempre aberta'
+                              : open
+                                ? 'Travar novamente'
+                                : 'Liberar para todos os alunos'
+                          }
+                        >
+                          {busy ? (
+                            <Loader2 size={13} className="animate-spin" />
+                          ) : open ? (
+                            <Unlock size={13} />
+                          ) : (
+                            <Lock size={13} />
+                          )}
+                          <span className="hidden sm:inline">{open ? 'Liberada' : 'Liberar'}</span>
+                        </button>
+                      )}
 
                       <button
                         type="button"

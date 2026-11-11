@@ -9,10 +9,18 @@ import { db } from './db';
  *  - release_mode = 'scheduled' e release_at <= agora        -> liberacao automatica por data
  *  - ou existe liberacao individual para aquele aluno (lesson_access)
  *
+ * Aulas PRO (is_pro) nunca abrem para todo mundo: so o aluno com liberacao
+ * individual em /admin/alunos (o assinante) consegue assistir.
+ *
  * Alem disso, se o curso for sequencial, a aula so abre depois que a anterior
  * for concluida. Administradores enxergam tudo liberado.
  */
+export function isProLesson(lesson) {
+  return Boolean(lesson?.is_pro);
+}
+
 export function isGloballyReleased(lesson, now = new Date()) {
+  if (isProLesson(lesson)) return false;
   if (lesson.release_mode === 'free') return true;
   if (lesson.release_mode === 'manual') return Boolean(lesson.is_released);
   if (lesson.release_mode === 'scheduled') {
@@ -24,6 +32,9 @@ export function isGloballyReleased(lesson, now = new Date()) {
 export function lockReason(lesson, { released, previousDone, sequential }) {
   if (released && (!sequential || previousDone)) return null;
   if (!released) {
+    if (isProLesson(lesson)) {
+      return { code: 'pro', message: 'So para assinantes' };
+    }
     if (lesson.release_mode === 'scheduled' && lesson.release_at) {
       return { code: 'scheduled', message: 'Liberacao programada' };
     }
@@ -77,6 +88,7 @@ export async function getCourseTree(courseSlug, user) {
   let previousDone = true; // a primeira aula nunca depende de nada
   let totalUnlocked = 0;
   let totalCompleted = 0;
+  let totalLessons = 0;
 
   // ordem global das aulas (para a regra sequencial)
   const ordered = modules.flatMap((mod) => lessons.filter((l) => l.module_id === mod.id));
@@ -85,9 +97,13 @@ export async function getCourseTree(courseSlug, user) {
   for (const lesson of ordered) {
     const prog = progressMap.get(lesson.id);
     const completed = Boolean(prog?.completed);
-    const released = isGloballyReleased(lesson, now) || grantSet.has(lesson.id);
+    const granted = grantSet.has(lesson.id);
+    const pro = isProLesson(lesson);
+    const released = pro ? granted : isGloballyReleased(lesson, now) || granted;
     const unlocked = isAdmin || (released && (!course.sequential || previousDone));
-    const reason = isAdmin ? null : lockReason(lesson, { released, previousDone, sequential: course.sequential });
+    const reason = isAdmin
+      ? null
+      : lockReason(lesson, { released, previousDone, sequential: course.sequential });
 
     stateById.set(lesson.id, {
       unlocked,
@@ -95,22 +111,29 @@ export async function getCourseTree(courseSlug, user) {
       feedback: prog?.feedback || null,
       secondsWatched: prog?.seconds_watched || 0,
       lock: unlocked ? null : reason,
-      grantedIndividually: grantSet.has(lesson.id),
+      grantedIndividually: granted,
     });
 
-    if (unlocked) totalUnlocked += 1;
-    if (completed) totalCompleted += 1;
-    previousDone = completed;
+    // PRO sem acesso nao entra no progresso do aluno (ele conclui o curso regular em 100%)
+    const counts = isAdmin || !pro || granted;
+    if (counts) {
+      totalLessons += 1;
+      if (unlocked) totalUnlocked += 1;
+      if (completed) totalCompleted += 1;
+    }
+
+    // aula PRO sem acesso nao trava a sequencia das aulas regulares
+    if (!(pro && !granted && !isAdmin)) {
+      previousDone = completed;
+    }
   }
 
   const tree = modules.map((mod) => ({
     ...mod,
     lessons: lessons
       .filter((l) => l.module_id === mod.id)
-      .map((l) => ({ ...l, state: stateById.get(l.id) })),
+      .map((l) => ({ ...l, is_pro: Boolean(l.is_pro), state: stateById.get(l.id) })),
   }));
-
-  const totalLessons = ordered.length;
 
   return {
     course,
@@ -148,7 +171,9 @@ export async function getLessonForUser(slug, user) {
     ? await db('lesson_access').where({ user_id: user.id, lesson_id: lesson.id }).first()
     : null;
 
-  const released = isGloballyReleased(lesson) || Boolean(grant);
+  const released = isProLesson(lesson)
+    ? Boolean(grant)
+    : isGloballyReleased(lesson) || Boolean(grant);
 
   let previousDone = true;
   if (course.sequential) {
@@ -161,14 +186,30 @@ export async function getLessonForUser(slug, user) {
         { column: 'lessons.position' },
         { column: 'lessons.id' },
       ])
-      .select('lessons.id');
+      .select('lessons.id', 'lessons.is_pro');
 
     const index = siblings.findIndex((s) => s.id === lesson.id);
     if (index > 0 && user) {
-      const prev = await db('lesson_progress')
-        .where({ user_id: user.id, lesson_id: siblings[index - 1].id })
-        .first();
-      previousDone = Boolean(prev?.completed);
+      const priorIds = siblings.slice(0, index).map((s) => s.id);
+      const priorGrants = priorIds.length
+        ? await db('lesson_access').where({ user_id: user.id }).whereIn('lesson_id', priorIds)
+        : [];
+      const priorGrantSet = new Set(priorGrants.map((g) => g.lesson_id));
+
+      let prevId = null;
+      for (let i = index - 1; i >= 0; i -= 1) {
+        const sib = siblings[i];
+        if (isProLesson(sib) && !priorGrantSet.has(sib.id)) continue;
+        prevId = sib.id;
+        break;
+      }
+
+      if (prevId) {
+        const prev = await db('lesson_progress')
+          .where({ user_id: user.id, lesson_id: prevId })
+          .first();
+        previousDone = Boolean(prev?.completed);
+      }
     }
   }
 

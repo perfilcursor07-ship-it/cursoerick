@@ -14,7 +14,9 @@ async function loadStats() {
       db('courses').count({ c: '*' }).first(),
       db('lessons').count({ c: '*' }).first(),
       db('lessons')
-        .where((qb) => qb.where('release_mode', 'free').orWhere('is_released', true))
+        .where((qb) => qb.where('is_pro', false).andWhere((inner) => {
+          inner.where('release_mode', 'free').orWhere('is_released', true);
+        }))
         .count({ c: '*' })
         .first(),
       db('users')

@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ChevronDown,
+  Crown,
   Loader2,
   Lock,
   Search,
@@ -67,6 +68,17 @@ export default function StudentsManager({ students, lessons }) {
       })
     );
 
+  const toggleAllPro = (student, granted) =>
+    run(() =>
+      api(`/api/admin/students/${student.id}/access`, {
+        method: 'POST',
+        body: { all_pro: true, granted },
+      })
+    );
+
+  const regularLessons = lessons.filter((l) => !l.is_pro);
+  const proLessons = lessons.filter((l) => l.is_pro);
+
   return (
     <div className="space-y-5">
       {error && (
@@ -109,6 +121,12 @@ export default function StudentsManager({ students, lessons }) {
                       {student.status === 'blocked' && (
                         <span className="badge-locked shrink-0">bloqueado</span>
                       )}
+                      {proLessons.length > 0 &&
+                        proLessons.every((l) => student.grantedLessonIds.includes(l.id)) && (
+                          <span className="badge-pro shrink-0">
+                            <Crown size={10} /> assinante
+                          </span>
+                        )}
                     </div>
                     <p className="truncate text-xs text-zinc-500">{student.email}</p>
                   </div>
@@ -163,59 +181,129 @@ export default function StudentsManager({ students, lessons }) {
 
                 {/* liberacao individual */}
                 {open === student.id && (
-                  <div className="border-t border-ink-700 bg-ink-900/60 px-5 py-4">
-                    <p className="mb-3 text-xs text-zinc-500">
-                      Libere uma aula apenas para <strong className="text-zinc-300">
-                        {student.name.split(/\s+/)[0]}
-                      </strong>
-                      , antes da liberacao geral.
-                    </p>
-
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {lessons.map((lesson) => {
-                        const granted = student.grantedLessonIds.includes(lesson.id);
-                        const alreadyOpen = lesson.openForAll;
-
-                        return (
-                          <div
-                            key={lesson.id}
-                            className="flex items-center gap-3 rounded-xl border border-ink-700 bg-ink-850 px-3 py-2.5"
-                          >
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-xs font-medium text-zinc-200">
-                                {lesson.title}
-                              </p>
-                              <p className="truncate text-[11px] text-zinc-500">
-                                {lesson.moduleTitle}
-                              </p>
-                            </div>
-
-                            {alreadyOpen ? (
-                              <span className="badge-open shrink-0">aberta</span>
-                            ) : (
+                  <div className="space-y-5 border-t border-ink-700 bg-ink-900/60 px-5 py-4">
+                    {proLessons.length > 0 && (
+                      <div>
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                          <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-200">
+                            <Crown size={13} />
+                            Aulas PRO - so para assinante
+                          </p>
+                          {(() => {
+                            const allGranted = proLessons.every((l) =>
+                              student.grantedLessonIds.includes(l.id)
+                            );
+                            return (
                               <button
                                 type="button"
                                 disabled={busy}
-                                onClick={() => toggleAccess(student, lesson.id, !granted)}
-                                className={granted ? 'btn-ghost btn-sm' : 'btn-primary btn-sm'}
+                                onClick={() => toggleAllPro(student, !allGranted)}
+                                className={allGranted ? 'btn-ghost btn-sm' : 'btn-primary btn-sm'}
                               >
                                 {busy ? (
                                   <Loader2 size={12} className="animate-spin" />
-                                ) : granted ? (
-                                  <Unlock size={12} />
                                 ) : (
-                                  <Lock size={12} />
+                                  <Crown size={12} />
                                 )}
-                                {granted ? 'liberada' : 'liberar'}
+                                {allGranted ? 'Remover acesso PRO' : 'Liberar todas as aulas PRO'}
                               </button>
-                            )}
-                          </div>
-                        );
-                      })}
+                            );
+                          })()}
+                        </div>
+                        <p className="mb-3 text-xs text-zinc-500">
+                          Marque {student.name.split(/\s+/)[0]} como assinante para ele assistir
+                          o modulo PRO.
+                        </p>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {proLessons.map((lesson) => {
+                            const granted = student.grantedLessonIds.includes(lesson.id);
+                            return (
+                              <div
+                                key={lesson.id}
+                                className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-3 py-2.5"
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-xs font-medium text-zinc-200">
+                                    {lesson.title}
+                                  </p>
+                                  <p className="truncate text-[11px] text-amber-200/70">
+                                    PRO · {lesson.moduleTitle}
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  disabled={busy}
+                                  onClick={() => toggleAccess(student, lesson.id, !granted)}
+                                  className={granted ? 'btn-ghost btn-sm' : 'btn-primary btn-sm'}
+                                >
+                                  {busy ? (
+                                    <Loader2 size={12} className="animate-spin" />
+                                  ) : granted ? (
+                                    <Unlock size={12} />
+                                  ) : (
+                                    <Lock size={12} />
+                                  )}
+                                  {granted ? 'liberada' : 'liberar'}
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
 
-                      {!lessons.length && (
-                        <p className="text-xs text-zinc-500">Nenhuma aula cadastrada.</p>
-                      )}
+                    <div>
+                      <p className="mb-3 text-xs text-zinc-500">
+                        Libere uma aula regular apenas para{' '}
+                        <strong className="text-zinc-300">{student.name.split(/\s+/)[0]}</strong>
+                        , antes da liberacao geral.
+                      </p>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {regularLessons.map((lesson) => {
+                          const granted = student.grantedLessonIds.includes(lesson.id);
+                          const alreadyOpen = lesson.openForAll;
+
+                          return (
+                            <div
+                              key={lesson.id}
+                              className="flex items-center gap-3 rounded-xl border border-ink-700 bg-ink-850 px-3 py-2.5"
+                            >
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-xs font-medium text-zinc-200">
+                                  {lesson.title}
+                                </p>
+                                <p className="truncate text-[11px] text-zinc-500">
+                                  {lesson.moduleTitle}
+                                </p>
+                              </div>
+
+                              {alreadyOpen ? (
+                                <span className="badge-open shrink-0">aberta</span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled={busy}
+                                  onClick={() => toggleAccess(student, lesson.id, !granted)}
+                                  className={granted ? 'btn-ghost btn-sm' : 'btn-primary btn-sm'}
+                                >
+                                  {busy ? (
+                                    <Loader2 size={12} className="animate-spin" />
+                                  ) : granted ? (
+                                    <Unlock size={12} />
+                                  ) : (
+                                    <Lock size={12} />
+                                  )}
+                                  {granted ? 'liberada' : 'liberar'}
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+
+                        {!lessons.length && (
+                          <p className="text-xs text-zinc-500">Nenhuma aula cadastrada.</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}

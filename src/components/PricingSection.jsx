@@ -59,6 +59,7 @@ export default function PricingSection({ settings, loggedIn }) {
       highlight: true,
       features: [
         { label: 'Tudo do plano Curso completo', ok: true },
+        { label: '5 aulas PRO exclusivas para assinantes', ok: true, strong: true },
         { label: 'Mentoria para tirar duvidas e revisar sua pagina', ok: true },
         { label: '30 dias gratis no ViralizeAI, o sistema de postagem', ok: true, strong: true },
         { label: 'Redacao com IA, arte e agendamento em um painel', ok: true },

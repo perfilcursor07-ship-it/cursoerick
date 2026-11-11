@@ -1,4 +1,4 @@
-import { Lock, Play } from 'lucide-react';
+import { Crown, Lock, Play } from 'lucide-react';
 import { isGloballyReleased } from '@/lib/access';
 
 /**
@@ -9,20 +9,31 @@ export default function CurriculumPreview({ curriculum }) {
   let counter = 0;
 
   return (
-    <div className="grid gap-4 md:grid-cols-3">
-      {curriculum.modules.map((mod, mi) => (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {curriculum.modules.map((mod, mi) => {
+        const pro = mod.lessons.length > 0 && mod.lessons.every((l) => l.is_pro);
+        return (
         <div key={mod.id} className="card p-5">
           <div className="flex items-center gap-3">
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-500/15 text-xs font-bold text-brand-300">
+            <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg text-xs font-bold ${
+              pro ? 'bg-amber-400/15 text-amber-200' : 'bg-brand-500/15 text-brand-300'
+            }`}>
               {mi + 1}
             </span>
             <div className="min-w-0">
               <h3 className="truncate text-sm font-semibold text-white">{mod.title}</h3>
-              <p className="text-[11px] text-zinc-500">{mod.lessons.length} aulas</p>
+              <p className="text-[11px] text-zinc-500">
+                {mod.lessons.length} aulas
+                {pro && (
+                  <span className="ml-1.5 inline-flex items-center gap-0.5 font-semibold text-amber-300">
+                    <Crown size={10} /> PRO
+                  </span>
+                )}
+              </p>
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-4 gap-2">
+          <div className={`mt-4 grid gap-2 ${mod.lessons.length >= 5 ? 'grid-cols-5' : 'grid-cols-4'}`}>
             {mod.lessons.map((lesson) => {
               counter += 1;
               const open = isGloballyReleased(lesson);
@@ -64,7 +75,8 @@ export default function CurriculumPreview({ curriculum }) {
             })}
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

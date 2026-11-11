@@ -76,7 +76,8 @@ export default async function PainelPage({ searchParams }) {
 
   // para o aviso: a aula que o aluno precisa terminar e a primeira ainda bloqueada
   const current = flat.find((f) => f.lesson.state.unlocked && !f.lesson.state.completed) || null;
-  const blocked = flat.find((f) => !f.lesson.state.unlocked) || null;
+  const blocked =
+    flat.find((f) => !f.lesson.state.unlocked && f.lesson.state.lock?.code !== 'pro') || null;
 
   return (
     <main className="pb-16">

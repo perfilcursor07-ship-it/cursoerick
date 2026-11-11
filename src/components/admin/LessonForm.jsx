@@ -15,6 +15,7 @@ const EMPTY = {
   duration_seconds: 0,
   release_mode: 'manual',
   is_released: false,
+  is_pro: false,
   release_at: '',
 };
 
@@ -31,6 +32,7 @@ export default function LessonForm({ moduleId, lesson, onDone, onCancel }) {
           video_url: lesson.video_url || '',
           video_path: lesson.video_path || '',
           thumbnail_url: lesson.thumbnail_url || '',
+          is_pro: Boolean(lesson.is_pro),
           release_at: lesson.release_at
             ? new Date(lesson.release_at).toISOString().slice(0, 16)
             : '',
@@ -94,9 +96,10 @@ export default function LessonForm({ moduleId, lesson, onDone, onCancel }) {
       video_path: form.video_type === 'upload' ? form.video_path : '',
       thumbnail_url: form.thumbnail_url,
       duration_seconds: Number(form.duration_seconds) || 0,
-      release_mode: form.release_mode,
-      is_released: form.release_mode === 'free' ? true : Boolean(form.is_released),
-      release_at: form.release_mode === 'scheduled' ? form.release_at || null : null,
+      release_mode: form.is_pro ? 'manual' : form.release_mode,
+      is_released: form.is_pro ? false : form.release_mode === 'free' ? true : Boolean(form.is_released),
+      is_pro: Boolean(form.is_pro),
+      release_at: form.is_pro || form.release_mode !== 'scheduled' ? null : form.release_at || null,
       is_published: true,
     };
 
@@ -287,17 +290,39 @@ export default function LessonForm({ moduleId, lesson, onDone, onCancel }) {
         </div>
       </div>
 
+      <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
+        <input
+          type="checkbox"
+          checked={Boolean(form.is_pro)}
+          onChange={(e) => set('is_pro', e.target.checked)}
+          className="mt-0.5 h-4 w-4 rounded border-ink-500 bg-ink-800 accent-amber-400"
+        />
+        <span>
+          <span className="block text-sm font-semibold text-amber-100">Aula PRO - so para assinante</span>
+          <span className="mt-0.5 block text-xs text-zinc-500">
+            Nao abre para todo mundo. Voce libera em Alunos, so para quem e assinante.
+          </span>
+        </span>
+      </label>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="label">Liberacao</label>
           <select
             className="input"
-            value={form.release_mode}
+            value={form.is_pro ? 'manual' : form.release_mode}
+            disabled={form.is_pro}
             onChange={(e) => set('release_mode', e.target.value)}
           >
-            <option value="free">Aberta para todos (aula de apresentacao)</option>
-            <option value="manual">Manual - eu libero quando quiser</option>
-            <option value="scheduled">Agendada por data</option>
+            {form.is_pro ? (
+              <option value="manual">PRO - so o assinante que voce liberar</option>
+            ) : (
+              <>
+                <option value="free">Aberta para todos (aula de apresentacao)</option>
+                <option value="manual">Manual - eu libero quando quiser</option>
+                <option value="scheduled">Agendada por data</option>
+              </>
+            )}
           </select>
         </div>
 
@@ -314,7 +339,7 @@ export default function LessonForm({ moduleId, lesson, onDone, onCancel }) {
         </div>
       </div>
 
-      {form.release_mode === 'scheduled' && (
+      {!form.is_pro && form.release_mode === 'scheduled' && (
         <div>
           <label className="label">Liberar em</label>
           <input
@@ -326,7 +351,7 @@ export default function LessonForm({ moduleId, lesson, onDone, onCancel }) {
         </div>
       )}
 
-      {form.release_mode === 'manual' && (
+      {!form.is_pro && form.release_mode === 'manual' && (
         <label className="flex cursor-pointer items-center gap-2.5 text-sm text-zinc-300">
           <input
             type="checkbox"

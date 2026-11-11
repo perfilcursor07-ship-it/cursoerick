@@ -70,7 +70,9 @@ export default function ProgressNotice({ stats, current, blocked, sequential = f
             <span className="text-zinc-300">{blocked.lesson.title}</span>{' '}
             {scheduled
               ? `abre em ${formatDateTime(blocked.lesson.release_at)}.`
-              : 'abre assim que o administrador liberar.'}
+              : blocked.lesson.state.lock?.code === 'pro'
+                ? 'é exclusiva para assinantes.'
+                : 'abre assim que o administrador liberar.'}
           </p>
         </div>
 

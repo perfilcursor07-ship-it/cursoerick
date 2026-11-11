@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CalendarClock, Eye, ImageIcon, Loader2, Lock, Unlock } from 'lucide-react';
+import { CalendarClock, Crown, Eye, ImageIcon, Loader2, Lock, Unlock } from 'lucide-react';
 import { api } from '@/lib/client';
 
 const GRADIENTS = [
@@ -15,6 +15,7 @@ const GRADIENTS = [
 ];
 
 function isOpen(lesson) {
+  if (lesson.is_pro) return false;
   if (lesson.release_mode === 'free') return true;
   if (lesson.release_mode === 'manual') return Boolean(lesson.is_released);
   return Boolean(lesson.release_at) && new Date(lesson.release_at) <= new Date();
@@ -30,7 +31,7 @@ export default function AdminShelf({ modules }) {
   const [error, setError] = useState('');
 
   async function toggle(lesson) {
-    if (lesson.release_mode === 'free') return;
+    if (lesson.release_mode === 'free' || lesson.is_pro) return;
     setBusyId(lesson.id);
     setError('');
     try {
@@ -74,7 +75,8 @@ export default function AdminShelf({ modules }) {
                 counter += 1;
                 const open = isOpen(lesson);
                 const gradient = GRADIENTS[(lesson.id + counter) % GRADIENTS.length];
-                const fixed = lesson.release_mode === 'free';
+                const pro = Boolean(lesson.is_pro);
+                const fixed = lesson.release_mode === 'free' || pro;
 
                 return (
                   <button
@@ -83,11 +85,13 @@ export default function AdminShelf({ modules }) {
                     onClick={() => toggle(lesson)}
                     disabled={fixed || busyId === lesson.id}
                     title={
-                      fixed
-                        ? 'Aula sempre aberta'
-                        : open
-                          ? 'Clique para travar'
-                          : 'Clique para liberar'
+                      pro
+                        ? 'Aula PRO: libere em Alunos, so para assinantes'
+                        : fixed
+                          ? 'Aula sempre aberta'
+                          : open
+                            ? 'Clique para travar'
+                            : 'Clique para liberar'
                     }
                     className={[
                       'group relative aspect-[2/3] w-[104px] shrink-0 overflow-hidden rounded-lg border text-left',
@@ -116,9 +120,17 @@ export default function AdminShelf({ modules }) {
                     <span className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                     {!open && <span className="absolute inset-0 bg-black/55 backdrop-grayscale" />}
 
+                    {pro && (
+                      <span className="absolute left-1.5 top-1.5 rounded bg-amber-400 px-1 py-px text-[8px] font-black uppercase tracking-wider text-black">
+                        PRO
+                      </span>
+                    )}
+
                     <span className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-full border border-white/15 bg-black/70 text-white/85 backdrop-blur">
                       {busyId === lesson.id ? (
                         <Loader2 size={11} className="animate-spin" />
+                      ) : pro ? (
+                        <Crown size={11} className="text-amber-300" />
                       ) : open ? (
                         <Unlock size={11} className="text-brand-300" />
                       ) : lesson.release_mode === 'scheduled' ? (
